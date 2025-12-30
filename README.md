@@ -24,3 +24,5 @@ Install extension: GitHub Copilot
   * Copilot created folder structure in the root of this project
 * Question: Move folder structure under subfolder called 'mexico'
   * Copilot did it.
+* Question: Can I use Unity version 6.3 (latest version)
+  * Yes, copilot updated documentation to reflect it.

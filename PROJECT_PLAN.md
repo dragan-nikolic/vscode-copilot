@@ -6,7 +6,7 @@ A multiplayer card game built with Unity, featuring online gameplay, card mechan
 ## Development Phases
 
 ### Phase 1: Project Setup & Core Architecture (Week 1-2)
-- [x] Set up Unity project (2021.3 LTS or newer recommended)
+- [x] Set up Unity project (Unity 6.3)
 - [ ] Install networking solution (Mirror or Unity Netcode for GameObjects)
 - [x] Set up version control (Git with .gitignore for Unity)
 - [x] Create folder structure
@@ -85,7 +85,7 @@ A multiplayer card game built with Unity, featuring online gameplay, card mechan
 ## Technical Stack
 
 ### Core Technologies
-- **Engine**: Unity 2021.3 LTS or newer
+- **Engine**: Unity 6.3
 - **Language**: C#
 - **Networking**: Mirror (recommended) or Unity Netcode for GameObjects
 - **Version Control**: Git + GitHub/GitLab

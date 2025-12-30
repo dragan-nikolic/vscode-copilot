@@ -6,7 +6,7 @@ Welcome to the Unity Multiplayer Card Game project! Follow these steps to get th
 
 ## Prerequisites
 
-- **Unity 2021.3 LTS or newer** (recommended: Unity 2022.3 LTS)
+- **Unity 6.3** (latest version)
 - **Git** for version control
 - **Visual Studio** or **Visual Studio Code** with C# extension
 - **Mirror** or **Unity Netcode for GameObjects** (to be installed)
@@ -40,7 +40,7 @@ Assets/_Project/
 
 1. Launch Unity Hub
 2. Click "Add" and select this project folder
-3. Open the project with Unity 2021.3 LTS or newer
+3. Open the project with Unity 6.3
 
 ### 2. Install Required Packages
 
@@ -169,7 +169,7 @@ Controls all audio in the game. Manages music and sound effects.
 - Reimport scripts: Right-click folder > Reimport
 
 ### Compilation Errors?
-- Ensure Unity version is 2021.3 LTS or newer
+- Ensure Unity version is 6.3
 - Check that .NET Standard 2.1 is selected in Player Settings
 - Close and reopen Unity if assembly definitions aren't recognized
 
