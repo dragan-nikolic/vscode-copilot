@@ -6,11 +6,11 @@ A multiplayer card game built with Unity, featuring online gameplay, card mechan
 ## Development Phases
 
 ### Phase 1: Project Setup & Core Architecture (Week 1-2)
-- [ ] Set up Unity project (2021.3 LTS or newer recommended)
+- [x] Set up Unity project (2021.3 LTS or newer recommended)
 - [ ] Install networking solution (Mirror or Unity Netcode for GameObjects)
-- [ ] Set up version control (Git with .gitignore for Unity)
-- [ ] Create folder structure
-- [ ] Set up core architecture patterns (MVC/MVVM)
+- [x] Set up version control (Git with .gitignore for Unity)
+- [x] Create folder structure
+- [x] Set up core architecture patterns (MVC/MVVM)
 - [ ] Create basic scene structure
 
 ### Phase 2: Card System Foundation (Week 2-3)
