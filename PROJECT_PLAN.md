@@ -7,7 +7,7 @@ A multiplayer card game built with Unity, featuring online gameplay, card mechan
 
 ### Phase 1: Project Setup & Core Architecture (Week 1-2)
 - [x] Set up Unity project (Unity 6.3)
-- [ ] Install networking solution (Mirror or Unity Netcode for GameObjects)
+- [x] Install networking solution (Mirror or Unity Netcode for GameObjects)
 - [x] Set up version control (Git with .gitignore for Unity)
 - [x] Create folder structure
 - [x] Set up core architecture patterns (MVC/MVVM)
