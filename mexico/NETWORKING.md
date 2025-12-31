@@ -22,7 +22,7 @@
 - Uses connection approval for validation
 
 **Key Features:**
-- Max 2 players per game
+- Max 3 players per game
 - Auto-detects when game is ready to start
 - Spawn point management
 - Connection validation via approval callback
@@ -71,7 +71,7 @@ In your main game scene:
    - Player Prefab: Assign your player prefab (see step 2)
 5. Configure CardGameNetworkManager:
    - Player Prefab: Assign your player prefab
-   - Min/Max Players: 2
+   - Min/Max Players: 3
    - Player Spawn Points: Assign spawn transforms
 
 ### 2. Create Player Prefab
@@ -86,8 +86,8 @@ In your main game scene:
 
 ### 3. Configure Spawn Points
 
-1. Create 2 empty GameObjects for spawn positions
-2. Position them on opposite sides of the play area
+1. Create 3 empty GameObjects for spawn positions
+2. Position them around the play area (e.g., in a triangle formation)
 3. Assign to CardGameNetworkManager's "Player Spawn Points" array
 
 ### 4. Setup Card Prefabs

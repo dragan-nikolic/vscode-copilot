@@ -12,8 +12,8 @@ namespace CardGame.Network
         public static CardGameNetworkManager Instance { get; private set; }
 
         [Header("Game Settings")]
-        [SerializeField] private int _minPlayers = 2;
-        [SerializeField] private int _maxPlayers = 2;
+        [SerializeField] private int _minPlayers = 3;
+        [SerializeField] private int _maxPlayers = 3;
 
         [Header("Spawn Points")]
         [SerializeField] private Transform[] _playerSpawnPoints;
