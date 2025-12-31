@@ -7,7 +7,7 @@ namespace CardGame.Network
     /// <summary>
     /// Manages matchmaking and lobby functionality.
     /// </summary>
-    public class MatchmakingManager : Managers.Singleton<MatchmakingManager>
+    public class MatchmakingManager : Utilities.Singleton<MatchmakingManager>
     {
         [Header("Matchmaking Settings")]
         [SerializeField] private string _serverAddress = "127.0.0.1";

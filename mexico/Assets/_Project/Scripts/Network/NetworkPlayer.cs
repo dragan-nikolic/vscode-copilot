@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Collections;
 
 namespace CardGame.Network
 {
@@ -16,7 +17,7 @@ namespace CardGame.Network
         private NetworkVariable<bool> _isPlayerTurn = new NetworkVariable<bool>();
 
         [Header("References")]
-        [SerializeField] private Player.Player _localPlayer;
+        // [SerializeField] private Player.Player _localPlayer; // TODO: Create Player class
 
         public string PlayerName => _playerName.Value.ToString();
         public int PlayerHealth => _playerHealth.Value;

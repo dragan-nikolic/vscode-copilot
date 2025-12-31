@@ -14,12 +14,14 @@ namespace CardGame.Cards
         [SerializeField] private int _currentAttack;
         [SerializeField] private int _currentHealth;
         [SerializeField] private bool _canAttack = false;
+        [SerializeField] private bool _isFaceDown = false;
 
         // Properties
         public CardData Data => _data;
         public int CurrentAttack => _currentAttack;
         public int CurrentHealth => _currentHealth;
         public bool CanAttack => _canAttack;
+        public bool IsFaceDown => _isFaceDown;
 
         // Events
         public event System.Action<Card> OnCardPlayed;
@@ -52,6 +54,16 @@ namespace CardGame.Cards
         {
             _data = data;
             InitializeCard();
+        }
+
+        /// <summary>
+        /// Sets whether the card is face down (hidden).
+        /// </summary>
+        public void SetFaceDown(bool faceDown)
+        {
+            _isFaceDown = faceDown;
+            // TODO: Update card visual to show/hide card face
+            Debug.Log($"[Card] {(_data != null ? _data.CardName : "Card")} face down: {faceDown}");
         }
 
         /// <summary>

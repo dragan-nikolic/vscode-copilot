@@ -1,7 +1,11 @@
 {
     "name": "CardGame.Core",
     "rootNamespace": "CardGame",
-    "references": [],
+    "references": [
+        "Unity.Netcode.Runtime",
+        "Unity.Collections",
+        "Unity.Networking.Transport"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

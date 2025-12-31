@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Collections;
 
 namespace CardGame.Network
 {
@@ -104,8 +105,8 @@ namespace CardGame.Network
         /// <summary>
         /// Plays the card on the network (command from client).
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void PlayCardServerRpc(ServerRpcParams rpcParams = default)
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        public void PlayCardServerRpc(RpcParams rpcParams = default)
         {
             ulong senderId = rpcParams.Receive.SenderClientId;
 
