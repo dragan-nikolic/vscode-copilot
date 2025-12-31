@@ -1,5 +1,5 @@
 using UnityEngine;
-using Mirror;
+using Unity.Netcode;
 
 namespace CardGame.Network
 {
@@ -13,63 +13,73 @@ namespace CardGame.Network
         [SerializeField] private Cards.Card _card;
 
         [Header("Network State")]
-        [SyncVar(hook = nameof(OnCardIdChanged))]
-        private string _cardId;
-        
-        [SyncVar(hook = nameof(OnOwnerChanged))]
-        private uint _ownerId;
-        
-        [SyncVar(hook = nameof(OnCardStateChanged))]
-        private CardNetworkState _cardState = CardNetworkState.InDeck;
+        private NetworkVariable<FixedString64Bytes> _cardId = new NetworkVariable<FixedString64Bytes>();
+        private NetworkVariable<ulong> _ownerId = new NetworkVariable<ulong>();
+        private NetworkVariable<CardNetworkState> _cardState = new NetworkVariable<CardNetworkState>(CardNetworkState.InDeck);
 
-        public string CardId => _cardId;
-        public uint OwnerId => _ownerId;
-        public CardNetworkState CardState => _cardState;
+        public string CardId => _cardId.Value.ToString();
+        public ulong OwnerId => _ownerId.Value;
+        public CardNetworkState CardState => _cardState.Value;
 
         // Events
         public event System.Action<string> OnCardIdUpdated;
-        public event System.Action<uint> OnOwnerUpdated;
+        public event System.Action<ulong> OnOwnerUpdated;
         public event System.Action<CardNetworkState> OnStateUpdated;
 
-        public override void OnStartServer()
+        public override void OnNetworkSpawn()
         {
-            base.OnStartServer();
+            base.OnNetworkSpawn();
             
-            if (_card != null && _card.Data != null)
+            if (IsServer)
             {
-                _cardId = _card.Data.CardId;
+                if (_card != null && _card.Data != null)
+                {
+                    _cardId.Value = _card.Data.CardId;
+                }
+                
+                Debug.Log($"[NetworkCard] Server initialized card {NetworkObjectId} - CardID: {CardId}");
             }
-            
-            Debug.Log($"[NetworkCard] Server initialized card {netId} - CardID: {_cardId}");
-        }
 
-        public override void OnStartClient()
-        {
-            base.OnStartClient();
-            Debug.Log($"[NetworkCard] Client received card {netId}");
+            // Subscribe to network variable changes
+            _cardId.OnValueChanged += OnCardIdChangedCallback;
+            _ownerId.OnValueChanged += OnOwnerChangedCallback;
+            _cardState.OnValueChanged += OnCardStateChangedCallback;
+
+            Debug.Log($"[NetworkCard] Client received card {NetworkObjectId}");
             
             // Initialize local card with network data
-            if (_card != null && !string.IsNullOrEmpty(_cardId))
+            if (_card != null && !string.IsNullOrEmpty(CardId))
             {
                 // TODO: Load card data from CardDatabase using _cardId
             }
         }
 
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+
+            // Unsubscribe from network variable changes
+            _cardId.OnValueChanged -= OnCardIdChangedCallback;
+            _ownerId.OnValueChanged -= OnOwnerChangedCallback;
+            _cardState.OnValueChanged -= OnCardStateChangedCallback;
+        }
+
         /// <summary>
         /// Initializes the network card with card data (server only).
         /// </summary>
-        [Server]
-        public void Initialize(Cards.CardData cardData, uint ownerNetId)
+        public void Initialize(Cards.CardData cardData, ulong ownerNetId)
         {
+            if (!IsServer) return;
+
             if (cardData == null)
             {
                 Debug.LogError("[NetworkCard] Cannot initialize with null CardData!");
                 return;
             }
 
-            _cardId = cardData.CardId;
-            _ownerId = ownerNetId;
-            _cardState = CardNetworkState.InDeck;
+            _cardId.Value = cardData.CardId;
+            _ownerId.Value = ownerNetId;
+            _cardState.Value = CardNetworkState.InDeck;
 
             if (_card == null)
                 _card = GetComponent<Cards.Card>();
@@ -77,32 +87,39 @@ namespace CardGame.Network
             if (_card != null)
                 _card.SetCardData(cardData);
 
-            Debug.Log($"[NetworkCard] Initialized card {_cardId} for player {_ownerId}");
+            Debug.Log($"[NetworkCard] Initialized card {CardId} for player {ownerNetId}");
         }
 
         /// <summary>
         /// Changes the card's network state (server only).
         /// </summary>
-        [Server]
         public void SetCardState(CardNetworkState newState)
         {
-            _cardState = newState;
-            Debug.Log($"[NetworkCard] Card {_cardId} state changed to {newState}");
+            if (!IsServer) return;
+
+            _cardState.Value = newState;
+            Debug.Log($"[NetworkCard] Card {CardId} state changed to {newState}");
         }
 
         /// <summary>
         /// Plays the card on the network (command from client).
         /// </summary>
-        [Command(requiresAuthority = false)]
-        public void CmdPlayCard(NetworkConnectionToClient sender = null)
+        [ServerRpc(RequireOwnership = false)]
+        public void PlayCardServerRpc(ServerRpcParams rpcParams = default)
         {
-            if (sender == null) return;
+            ulong senderId = rpcParams.Receive.SenderClientId;
 
-            // Verify the player owns this card
-            NetworkPlayer player = sender.identity.GetComponent<NetworkPlayer>();
-            if (player == null || player.netId != _ownerId)
+            // Get the player's NetworkObject
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(senderId, out var clientInfo))
             {
-                Debug.LogWarning($"[NetworkCard] Player {sender.connectionId} tried to play card they don't own!");
+                Debug.LogWarning($"[NetworkCard] Client {senderId} not found!");
+                return;
+            }
+
+            NetworkPlayer player = clientInfo.PlayerObject?.GetComponent<NetworkPlayer>();
+            if (player == null || player.NetworkObjectId != _ownerId.Value)
+            {
+                Debug.LogWarning($"[NetworkCard] Player {senderId} tried to play card they don't own!");
                 return;
             }
 
@@ -113,17 +130,17 @@ namespace CardGame.Network
                 return;
             }
 
-            Debug.Log($"[NetworkCard] Playing card {_cardId}");
+            Debug.Log($"[NetworkCard] Playing card {CardId}");
             
             // Change state and play card
             SetCardState(CardNetworkState.InPlay);
-            RpcPlayCard();
+            PlayCardClientRpc();
         }
 
-        [ClientRpc]
-        private void RpcPlayCard()
+        [Rpc(SendTo.Everyone)]
+        private void PlayCardClientRpc()
         {
-            Debug.Log($"[NetworkCard] Card {_cardId} played on all clients");
+            Debug.Log($"[NetworkCard] Card {CardId} played on all clients");
             
             if (_card != null)
             {
@@ -136,21 +153,22 @@ namespace CardGame.Network
         /// <summary>
         /// Destroys the card on the network (server only).
         /// </summary>
-        [Server]
         public void DestroyCard()
         {
-            Debug.Log($"[NetworkCard] Destroying card {_cardId}");
+            if (!IsServer) return;
+
+            Debug.Log($"[NetworkCard] Destroying card {CardId}");
             SetCardState(CardNetworkState.Destroyed);
-            RpcDestroyCard();
+            DestroyCardClientRpc();
             
             // Destroy after a short delay to allow animations
             Invoke(nameof(DestroyNetworkObject), 0.5f);
         }
 
-        [ClientRpc]
-        private void RpcDestroyCard()
+        [Rpc(SendTo.Everyone)]
+        private void DestroyCardClientRpc()
         {
-            Debug.Log($"[NetworkCard] Card {_cardId} destroyed on all clients");
+            Debug.Log($"[NetworkCard] Card {CardId} destroyed on all clients");
             
             if (_card != null)
             {
@@ -158,24 +176,26 @@ namespace CardGame.Network
             }
         }
 
-        [Server]
         private void DestroyNetworkObject()
         {
-            NetworkServer.Destroy(gameObject);
+            if (IsServer && NetworkObject != null)
+            {
+                NetworkObject.Despawn();
+            }
         }
 
-        // SyncVar Hooks
-        private void OnCardIdChanged(string oldId, string newId)
+        // Network Variable Callbacks
+        private void OnCardIdChangedCallback(FixedString64Bytes oldId, FixedString64Bytes newId)
         {
-            OnCardIdUpdated?.Invoke(newId);
+            OnCardIdUpdated?.Invoke(newId.ToString());
         }
 
-        private void OnOwnerChanged(uint oldOwner, uint newOwner)
+        private void OnOwnerChangedCallback(ulong oldOwner, ulong newOwner)
         {
             OnOwnerUpdated?.Invoke(newOwner);
         }
 
-        private void OnCardStateChanged(CardNetworkState oldState, CardNetworkState newState)
+        private void OnCardStateChangedCallback(CardNetworkState oldState, CardNetworkState newState)
         {
             OnStateUpdated?.Invoke(newState);
         }

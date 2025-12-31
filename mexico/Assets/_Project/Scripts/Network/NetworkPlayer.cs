@@ -1,5 +1,5 @@
 using UnityEngine;
-using Mirror;
+using Unity.Netcode;
 
 namespace CardGame.Network
 {
@@ -10,135 +10,163 @@ namespace CardGame.Network
     public class NetworkPlayer : NetworkBehaviour
     {
         [Header("Player Info")]
-        [SyncVar] private string _playerName;
-        [SyncVar] private int _playerHealth;
-        [SyncVar] private int _playerMana;
-        [SyncVar] private bool _isPlayerTurn;
+        private NetworkVariable<FixedString64Bytes> _playerName = new NetworkVariable<FixedString64Bytes>();
+        private NetworkVariable<int> _playerHealth = new NetworkVariable<int>();
+        private NetworkVariable<int> _playerMana = new NetworkVariable<int>();
+        private NetworkVariable<bool> _isPlayerTurn = new NetworkVariable<bool>();
 
         [Header("References")]
         [SerializeField] private Player.Player _localPlayer;
 
-        public string PlayerName => _playerName;
-        public int PlayerHealth => _playerHealth;
-        public int PlayerMana => _playerMana;
-        public bool IsPlayerTurn => _isPlayerTurn;
+        public string PlayerName => _playerName.Value.ToString();
+        public int PlayerHealth => _playerHealth.Value;
+        public int PlayerMana => _playerMana.Value;
+        public bool IsPlayerTurn => _isPlayerTurn.Value;
 
         // Events
         public event System.Action<int> OnHealthChanged;
         public event System.Action<int> OnManaChanged;
         public event System.Action<bool> OnTurnChanged;
 
-        public override void OnStartServer()
+        public override void OnNetworkSpawn()
         {
-            base.OnStartServer();
-            
-            // Initialize server-side values
-            _playerHealth = Game.GameManager.Instance.StartingHealth;
-            _playerMana = Game.GameManager.Instance.StartingMana;
-            
-            Debug.Log($"[NetworkPlayer] Server initialized player {netId}");
+            base.OnNetworkSpawn();
+
+            if (IsServer)
+            {
+                // Initialize server-side values
+                _playerHealth.Value = Game.GameManager.Instance.StartingHealth;
+                _playerMana.Value = Game.GameManager.Instance.StartingMana;
+                
+                Debug.Log($"[NetworkPlayer] Server initialized player {NetworkObjectId}");
+            }
+
+            // Subscribe to network variable changes on all clients
+            _playerHealth.OnValueChanged += OnHealthChangedCallback;
+            _playerMana.OnValueChanged += OnManaChangedCallback;
+            _isPlayerTurn.OnValueChanged += OnTurnChangedCallback;
+
+            Debug.Log($"[NetworkPlayer] Client initialized for player {NetworkObjectId}");
+
+            if (IsOwner)
+            {
+                Debug.Log($"[NetworkPlayer] Local player started");
+                
+                // Set a default name (can be changed later)
+                SetPlayerNameServerRpc($"Player_{Random.Range(1000, 9999)}");
+            }
         }
 
-        public override void OnStartClient()
+        public override void OnNetworkDespawn()
         {
-            base.OnStartClient();
-            Debug.Log($"[NetworkPlayer] Client initialized for player {netId}");
-        }
+            base.OnNetworkDespawn();
 
-        public override void OnStartLocalPlayer()
-        {
-            base.OnStartLocalPlayer();
-            Debug.Log($"[NetworkPlayer] Local player started");
-            
-            // Set a default name (can be changed later)
-            CmdSetPlayerName($"Player_{Random.Range(1000, 9999)}");
+            // Unsubscribe from network variable changes
+            _playerHealth.OnValueChanged -= OnHealthChangedCallback;
+            _playerMana.OnValueChanged -= OnManaChangedCallback;
+            _isPlayerTurn.OnValueChanged -= OnTurnChangedCallback;
         }
 
         /// <summary>
         /// Sets the player's name (called by client).
         /// </summary>
-        [Command]
-        public void CmdSetPlayerName(string name)
+        [ServerRpc]
+        public void SetPlayerNameServerRpc(string name)
         {
-            _playerName = name;
+            _playerName.Value = name;
             Debug.Log($"[NetworkPlayer] Player name set to {name}");
         }
 
         /// <summary>
         /// Updates player health (called by server).
         /// </summary>
-        [Server]
         public void SetHealth(int health)
         {
-            _playerHealth = Mathf.Max(0, health);
-            RpcHealthChanged(_playerHealth);
+            if (!IsServer) return;
+
+            _playerHealth.Value = Mathf.Max(0, health);
+            HealthChangedClientRpc(_playerHealth.Value);
         }
 
-        [ClientRpc]
-        private void RpcHealthChanged(int newHealth)
+        [Rpc(SendTo.Everyone)]
+        private void HealthChangedClientRpc(int newHealth)
         {
-            OnHealthChanged?.Invoke(newHealth);
             Debug.Log($"[NetworkPlayer] Health changed to {newHealth}");
             
             if (newHealth <= 0)
             {
-                Debug.Log($"[NetworkPlayer] Player {_playerName} has been defeated!");
+                Debug.Log($"[NetworkPlayer] Player {PlayerName} has been defeated!");
             }
+        }
+
+        private void OnHealthChangedCallback(int oldHealth, int newHealth)
+        {
+            OnHealthChanged?.Invoke(newHealth);
         }
 
         /// <summary>
         /// Updates player mana (called by server).
         /// </summary>
-        [Server]
         public void SetMana(int mana)
         {
-            _playerMana = Mathf.Max(0, mana);
-            RpcManaChanged(_playerMana);
+            if (!IsServer) return;
+
+            _playerMana.Value = Mathf.Max(0, mana);
+            ManaChangedClientRpc(_playerMana.Value);
         }
 
-        [ClientRpc]
-        private void RpcManaChanged(int newMana)
+        [Rpc(SendTo.Everyone)]
+        private void ManaChangedClientRpc(int newMana)
+        {
+            Debug.Log($"[NetworkPlayer] Mana changed to {newMana}");
+        }
+
+        private void OnManaChangedCallback(int oldMana, int newMana)
         {
             OnManaChanged?.Invoke(newMana);
-            Debug.Log($"[NetworkPlayer] Mana changed to {newMana}");
         }
 
         /// <summary>
         /// Sets whether it's this player's turn (called by server).
         /// </summary>
-        [Server]
         public void SetTurn(bool isTurn)
         {
-            _isPlayerTurn = isTurn;
-            RpcTurnChanged(_isPlayerTurn);
+            if (!IsServer) return;
+
+            _isPlayerTurn.Value = isTurn;
+            TurnChangedClientRpc(_isPlayerTurn.Value);
         }
 
-        [ClientRpc]
-        private void RpcTurnChanged(bool isTurn)
+        [Rpc(SendTo.Everyone)]
+        private void TurnChangedClientRpc(bool isTurn)
         {
-            OnTurnChanged?.Invoke(isTurn);
             Debug.Log($"[NetworkPlayer] Turn state: {(isTurn ? "Your turn" : "Opponent's turn")}");
+        }
+
+        private void OnTurnChangedCallback(bool oldTurn, bool newTurn)
+        {
+            OnTurnChanged?.Invoke(newTurn);
         }
 
         /// <summary>
         /// Client requests to play a card (validated by server).
         /// </summary>
-        [Command]
-        public void CmdPlayCard(uint cardNetId, int targetPlayerIndex = -1)
+        [ServerRpc]
+        public void PlayCardServerRpc(ulong cardNetId, int targetPlayerIndex = -1)
         {
-            if (!_isPlayerTurn)
+            if (!_isPlayerTurn.Value)
             {
                 Debug.LogWarning("[NetworkPlayer] Cannot play card - not your turn!");
                 return;
             }
 
-            if (_playerMana < 1) // TODO: Check actual card cost
+            if (_playerMana.Value < 1) // TODO: Check actual card cost
             {
                 Debug.LogWarning("[NetworkPlayer] Cannot play card - not enough mana!");
                 return;
             }
 
-            Debug.Log($"[NetworkPlayer] Player {_playerName} plays card {cardNetId}");
+            Debug.Log($"[NetworkPlayer] Player {PlayerName} plays card {cardNetId}");
             
             // TODO: Implement card play logic
             // - Validate card in hand
@@ -146,11 +174,11 @@ namespace CardGame.Network
             // - Apply card effect
             // - Update game state
             
-            RpcCardPlayed(cardNetId);
+            CardPlayedClientRpc(cardNetId);
         }
 
-        [ClientRpc]
-        private void RpcCardPlayed(uint cardNetId)
+        [Rpc(SendTo.Everyone)]
+        private void CardPlayedClientRpc(ulong cardNetId)
         {
             Debug.Log($"[NetworkPlayer] Card {cardNetId} was played");
             // TODO: Play card animation and effects
@@ -159,19 +187,19 @@ namespace CardGame.Network
         /// <summary>
         /// Client requests to end their turn.
         /// </summary>
-        [Command]
-        public void CmdEndTurn()
+        [ServerRpc]
+        public void EndTurnServerRpc()
         {
-            if (!_isPlayerTurn)
+            if (!_isPlayerTurn.Value)
             {
                 Debug.LogWarning("[NetworkPlayer] Cannot end turn - not your turn!");
                 return;
             }
 
-            Debug.Log($"[NetworkPlayer] Player {_playerName} ends turn");
+            Debug.Log($"[NetworkPlayer] Player {PlayerName} ends turn");
             
             // TODO: Notify server to switch turns
-            if (NetworkServer.active)
+            if (IsServer)
             {
                 // Switch to next player
                 SetTurn(false);
@@ -181,19 +209,20 @@ namespace CardGame.Network
         /// <summary>
         /// Deals damage to this player (called by server).
         /// </summary>
-        [Server]
         public void TakeDamage(int damage)
         {
-            int newHealth = _playerHealth - damage;
+            if (!IsServer) return;
+
+            int newHealth = _playerHealth.Value - damage;
             SetHealth(newHealth);
             
-            RpcShowDamage(damage);
+            ShowDamageClientRpc(damage);
         }
 
-        [ClientRpc]
-        private void RpcShowDamage(int damage)
+        [Rpc(SendTo.Everyone)]
+        private void ShowDamageClientRpc(int damage)
         {
-            Debug.Log($"[NetworkPlayer] {_playerName} took {damage} damage!");
+            Debug.Log($"[NetworkPlayer] {PlayerName} took {damage} damage!");
             // TODO: Show damage visual effect
         }
     }

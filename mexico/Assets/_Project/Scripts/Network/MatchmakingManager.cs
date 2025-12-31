@@ -1,5 +1,5 @@
 using UnityEngine;
-using Mirror;
+using Unity.Netcode;
 using System.Collections.Generic;
 
 namespace CardGame.Network
@@ -10,7 +10,7 @@ namespace CardGame.Network
     public class MatchmakingManager : Managers.Singleton<MatchmakingManager>
     {
         [Header("Matchmaking Settings")]
-        [SerializeField] private string _serverAddress = "localhost";
+        [SerializeField] private string _serverAddress = "127.0.0.1";
         [SerializeField] private ushort _serverPort = 7777;
 
         [Header("Lobby State")]
@@ -70,9 +70,9 @@ namespace CardGame.Network
             OnMatchmakingCanceled?.Invoke();
 
             // Disconnect if connected
-            if (NetworkClient.isConnected)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsClient)
             {
-                NetworkManager.singleton.StopClient();
+                NetworkManager.Singleton.Shutdown();
             }
         }
 
@@ -83,16 +83,15 @@ namespace CardGame.Network
         {
             Debug.Log("[MatchmakingManager] Creating lobby...");
             
-            var networkManager = NetworkManager.singleton as CardGameNetworkManager;
-            if (networkManager != null)
+            if (CardGameNetworkManager.Instance != null)
             {
-                networkManager.StartHost();
+                CardGameNetworkManager.Instance.StartHost();
                 _isInLobby = true;
                 OnMatchFound?.Invoke();
             }
             else
             {
-                Debug.LogError("[MatchmakingManager] NetworkManager not found or wrong type!");
+                Debug.LogError("[MatchmakingManager] CardGameNetworkManager not found!");
             }
         }
 
@@ -123,10 +122,9 @@ namespace CardGame.Network
 
             Debug.Log("[MatchmakingManager] Leaving lobby...");
             
-            var networkManager = NetworkManager.singleton as CardGameNetworkManager;
-            if (networkManager != null)
+            if (CardGameNetworkManager.Instance != null)
             {
-                networkManager.StopNetwork();
+                CardGameNetworkManager.Instance.StopNetwork();
             }
 
             _isInLobby = false;
@@ -135,16 +133,28 @@ namespace CardGame.Network
 
         private void ConnectToServer()
         {
-            var networkManager = NetworkManager.singleton as CardGameNetworkManager;
-            if (networkManager != null)
+            if (NetworkManager.Singleton == null)
             {
-                networkManager.StartClient(_serverAddress);
+                Debug.LogError("[MatchmakingManager] NetworkManager not found!");
+                return;
+            }
+
+            // Set up transport with server address
+            var transport = NetworkManager.Singleton.GetComponent<Unity.Netcode.Transports.UTP.UnityTransport>();
+            if (transport != null)
+            {
+                transport.SetConnectionData(_serverAddress, _serverPort);
+            }
+
+            if (CardGameNetworkManager.Instance != null)
+            {
+                CardGameNetworkManager.Instance.StartClient();
                 _isInLobby = true;
                 OnMatchFound?.Invoke();
             }
             else
             {
-                Debug.LogError("[MatchmakingManager] NetworkManager not found or wrong type!");
+                Debug.LogError("[MatchmakingManager] CardGameNetworkManager not found!");
             }
         }
 

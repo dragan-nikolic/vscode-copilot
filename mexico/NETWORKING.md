@@ -1,12 +1,13 @@
-# Mirror Networking Setup Guide
+# Unity Netcode for GameObjects Setup Guide
 
 ## Installation
 
-1. **Install Mirror from Git URL**:
+1. **Install Unity Netcode from Package Manager**:
    - Open Unity
    - Window > Package Manager
-   - Click "+" > Add package from git URL
-   - Enter: `https://github.com/MirrorNetworking/Mirror.git`
+   - Click "+" > Add package by name
+   - Enter: `com.unity.netcode.gameobjects`
+   - Click Add
    - Wait for installation to complete
 
 ## Created Network Scripts
@@ -14,36 +15,37 @@
 ### Core Networking
 
 #### `CardGameNetworkManager.cs`
-- Custom NetworkManager extending Mirror's NetworkManager
+- Custom manager that works with Unity's NetworkManager
 - Handles player connections/disconnections
 - Manages game start conditions (min/max players)
 - Controls host/server/client modes
+- Uses connection approval for validation
 
 **Key Features:**
 - Max 2 players per game
 - Auto-detects when game is ready to start
 - Spawn point management
-- Connection validation
+- Connection validation via approval callback
 
 #### `NetworkPlayer.cs`
 - Represents a networked player
-- Synchronizes player state (health, mana, turn)
-- Handles player actions (play card, end turn)
+- Synchronizes player state (health, mana, turn) using NetworkVariables
+- Handles player actions via ServerRPCs
 - Server-authoritative validation
 
-**SyncVars:**
+**NetworkVariables:**
 - `_playerName` - Player display name
 - `_playerHealth` - Current health
 - `_playerMana` - Current mana
 - `_isPlayerTurn` - Turn state
 
 #### `NetworkCard.cs`
-- Synchronizes card state across network
+- Synchronizes card state across network using NetworkVariables
 - Handles card ownership and validation
 - Manages card lifecycle (deck → hand → play → discard)
 - Server-authoritative card actions
 
-**SyncVars:**
+**NetworkVariables:**
 - `_cardId` - Unique card identifier
 - `_ownerId` - Network ID of owning player
 - `_cardState` - Current card state (InDeck, InHand, InPlay, etc.)
@@ -53,6 +55,7 @@
 - Creates/joins lobbies
 - Handles quick play
 - Tracks lobby players
+- Uses Unity Transport (UTP) for connections
 
 ## Setup Instructions
 
@@ -61,20 +64,25 @@
 In your main game scene:
 
 1. Create empty GameObject named "NetworkManager"
-2. Add `CardGameNetworkManager` component
-3. Configure settings:
-   - Network Address: localhost (for testing)
-   - Max Players: 2
-   - Transport: Use default KCP Transport (comes with Mirror)
+2. Add Unity's `NetworkManager` component
+3. Add your `CardGameNetworkManager` component
+4. Configure NetworkManager settings:
+   - Transport: Unity Transport (UTP) - automatically added
+   - Player Prefab: Assign your player prefab (see step 2)
+5. Configure CardGameNetworkManager:
+   - Player Prefab: Assign your player prefab
+   - Min/Max Players: 2
+   - Player Spawn Points: Assign spawn transforms
 
 ### 2. Create Player Prefab
 
 1. Create a new GameObject named "NetworkPlayer"
 2. Add components:
-   - `NetworkIdentity` (Mirror component)
+   - `NetworkObject` (Unity Netcode component)
    - `NetworkPlayer` (your script)
 3. Save as prefab in `Assets/_Project/Prefabs/`
-4. Assign to NetworkManager's "Player Prefab" field
+4. Assign to NetworkManager's "Player Prefab" field (in NetworkManager component)
+5. Enable "Spawn With Observer" on NetworkObject
 
 ### 3. Configure Spawn Points
 
@@ -85,26 +93,27 @@ In your main game scene:
 ### 4. Setup Card Prefabs
 
 For each card prefab:
-1. Add `NetworkIdentity` component
+1. Add `NetworkObject` component
 2. Add `NetworkCard` component
 3. Ensure `Card` component is attached
+4. Register prefab in NetworkManager's "Prefabs List"
 
 ## Network Architecture
 
 ### Server-Authoritative Model
 - **Server** validates all game actions
-- **Clients** send commands (CmdPlayCard, CmdEndTurn)
-- **Server** processes and broadcasts results (RpcCardPlayed, RpcHealthChanged)
+- **Clients** send ServerRPCs (PlayCardServerRpc, EndTurnServerRpc)
+- **Server** processes and broadcasts results via ClientRpcs
 
 ### State Synchronization
-- **SyncVars** automatically sync from server to clients
-- **Hooks** trigger events when SyncVars change
-- **RPCs** send method calls across network
+- **NetworkVariables** automatically sync from server to clients
+- **OnValueChanged callbacks** trigger events when NetworkVariables change
+- **RPCs** send method calls across network (ServerRpc for server, ClientRpc for all clients)
 
 ## Testing Locally
 
-### Method 1: Host + Client
-1. Build your game
+### Method 1: Host + Client (Recommended)
+1. Build your game (File > Build Settings > Build)
 2. Run the built executable (acts as host)
 3. Run in Unity Editor (acts as client)
 4. Both connect to same game
@@ -117,7 +126,7 @@ For each card prefab:
 
 ### Method 3: ParrelSync (Unity Editor)
 1. Install ParrelSync from Package Manager
-2. Create a clone project
+2. Create a clone project (ParrelSync > Clones Manager)
 3. Run both Unity instances simultaneously
 4. One hosts, one joins
 
@@ -127,11 +136,13 @@ For each card prefab:
 
 ```csharp
 // As Host (server + local player)
-CardGameNetworkManager networkManager = FindFirstObjectByType<CardGameNetworkManager>();
-networkManager.StartHost();
+CardGameNetworkManager.Instance.StartHost();
+
+// As Server only
+CardGameNetworkManager.Instance.StartServer();
 
 // As Client
-networkManager.StartClient("192.168.1.100"); // Server IP
+CardGameNetworkManager.Instance.StartClient();
 ```
 
 ### Using Matchmaking Manager
@@ -144,7 +155,8 @@ MatchmakingManager.Instance.QuickPlay();
 MatchmakingManager.Instance.CreateLobby();
 
 // Join Specific Lobby
-MatchmakingManager.Instance.JoinLobby("192.168.1.100");
+MatchmakingManager.Instance.SetServerAddress("192.168.1.100");
+MatchmakingManager.Instance.JoinLobby();
 
 // Leave Lobby
 MatchmakingManager.Instance.LeaveLobby();
@@ -155,45 +167,68 @@ MatchmakingManager.Instance.LeaveLobby();
 ```csharp
 // On the client
 NetworkCard networkCard = cardObject.GetComponent<NetworkCard>();
-networkCard.CmdPlayCard();
+networkCard.PlayCardServerRpc();
 
 // Server validates and broadcasts to all clients
 ```
 
 ## Common Issues & Solutions
 
-### "NetworkIdentity not found"
-- Add `NetworkIdentity` component to all networked prefabs
+### "NetworkObject not found"
+- Add `NetworkObject` component to all networked prefabs
+- Register all networked prefabs in NetworkManager's "Prefabs List"
 
-### "Authority not allowed"
-- Check that commands are called from the local player
-- Ensure NetworkIdentity has correct authority settings
+### "Ownership not allowed"
+- Check that ServerRPCs are called from the owning client
+- Use `RequireOwnership = false` in ServerRpc attribute if needed
+- Ensure NetworkObject has correct ownership settings
 
 ### "Server not responding"
 - Check firewall settings
-- Verify network address is correct
-- Ensure Transport is properly configured
+- Verify network address is correct in Unity Transport
+- Ensure Transport is properly configured with correct IP/port
 
-### "SyncVar not updating"
-- Only server can modify SyncVars directly
-- Use [Server] methods or Commands to update values
+### "NetworkVariable not updating"
+- Only server can modify NetworkVariables directly
+- Use ServerRPCs or server-side methods to update values
+- Ensure NetworkBehaviour is spawned before accessing NetworkVariables
+
+### "Prefab not registered"
+- All networked prefabs must be in NetworkManager's "Prefabs List"
+- Prefabs must have NetworkObject component
 
 ## Next Steps
 
-1. ✅ Install Mirror package
+1. ✅ Install Unity Netcode package
 2. ✅ Create network scripts
 3. ⬜ Set up NetworkManager in scene
-4. ⬜ Create player prefab
+4. ⬜ Create and register player prefab
 5. ⬜ Test basic connection
 6. ⬜ Implement card spawning on network
 7. ⬜ Test full gameplay loop
 
+## Key Differences from Mirror
+
+**Mirror → Unity Netcode:**
+- `NetworkManager.singleton` → `NetworkManager.Singleton` (capital S)
+- `NetworkBehaviour` → Same name, different namespace
+- `[SyncVar]` → `NetworkVariable<T>`
+- `[Command]` → `[ServerRpc]`
+- `[ClientRpc]` → `[Rpc(SendTo.Everyone)]` or `[ClientRpc]`
+- `netId` → `NetworkObjectId`
+- `isServer` → `IsServer`
+- `isClient` → `IsClient`
+- `hasAuthority` → `IsOwner`
+- `NetworkServer.Spawn()` → `NetworkObject.Spawn()`
+- `NetworkServer.Destroy()` → `NetworkObject.Despawn()`
+
 ## Resources
 
-- [Mirror Documentation](https://mirror-networking.gitbook.io/)
-- [Mirror Discord](https://discord.gg/N9QVxbM)
-- [Mirror Examples](https://github.com/MirrorNetworking/Mirror/tree/master/Assets/Mirror/Examples)
+- [Unity Netcode Documentation](https://docs-multiplayer.unity3d.com/)
+- [Unity Netcode API Reference](https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@latest)
+- [Unity Netcode Samples](https://github.com/Unity-Technologies/com.unity.multiplayer.samples.coop)
+- [Unity Multiplayer Community](https://discord.gg/unity)
 
 ---
 
-All networking scripts follow Mirror's best practices and are ready to use!
+All networking scripts follow Unity Netcode best practices and are ready to use!

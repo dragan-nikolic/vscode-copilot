@@ -1,5 +1,5 @@
 using UnityEngine;
-using Mirror;
+using Unity.Netcode;
 
 namespace CardGame.Network
 {
@@ -7,8 +7,10 @@ namespace CardGame.Network
     /// Custom Network Manager for the card game.
     /// Handles client-server connections and game initialization.
     /// </summary>
-    public class CardGameNetworkManager : NetworkManager
+    public class CardGameNetworkManager : MonoBehaviour
     {
+        public static CardGameNetworkManager Instance { get; private set; }
+
         [Header("Game Settings")]
         [SerializeField] private int _minPlayers = 2;
         [SerializeField] private int _maxPlayers = 2;
@@ -16,53 +18,98 @@ namespace CardGame.Network
         [Header("Spawn Points")]
         [SerializeField] private Transform[] _playerSpawnPoints;
 
+        [Header("Player Prefab")]
+        [SerializeField] private GameObject _playerPrefab;
+
         private int _connectedPlayers = 0;
 
         public int ConnectedPlayers => _connectedPlayers;
         public int MaxPlayers => _maxPlayers;
 
-        public override void OnServerConnect(NetworkConnectionToClient conn)
+        private void Awake()
         {
-            base.OnServerConnect(conn);
-            
-            if (numPlayers > _maxPlayers)
+            if (Instance != null && Instance != this)
             {
-                conn.Disconnect();
-                Debug.LogWarning($"[NetworkManager] Player rejected - game is full ({numPlayers}/{_maxPlayers})");
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        private void Start()
+        {
+            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
+        }
+
+        private void OnDestroy()
+        {
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
+                NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+                NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+                NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
+            }
+        }
+
+        private void OnServerStarted()
+        {
+            Debug.Log("[NetworkManager] Server started");
+        }
+
+        private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
+        {
+            if (_connectedPlayers >= _maxPlayers)
+            {
+                response.Approved = false;
+                response.Reason = "Server is full";
+                Debug.LogWarning($"[NetworkManager] Player rejected - game is full ({_connectedPlayers}/{_maxPlayers})");
                 return;
             }
 
-            _connectedPlayers++;
-            Debug.Log($"[NetworkManager] Player connected. Total players: {_connectedPlayers}/{_maxPlayers}");
+            response.Approved = true;
+            response.CreatePlayerObject = true;
+            response.Position = GetStartPosition().position;
+            response.Rotation = GetStartPosition().rotation;
+
+            Debug.Log($"[NetworkManager] Player connection approved");
         }
 
-        public override void OnServerDisconnect(NetworkConnectionToClient conn)
+        private void OnClientConnected(ulong clientId)
         {
-            _connectedPlayers--;
-            Debug.Log($"[NetworkManager] Player disconnected. Total players: {_connectedPlayers}/{_maxPlayers}");
-            
-            base.OnServerDisconnect(conn);
-        }
-
-        public override void OnServerAddPlayer(NetworkConnectionToClient conn)
-        {
-            // Get spawn position
-            Transform startPos = GetStartPosition();
-            
-            // Create player object
-            GameObject player = startPos != null
-                ? Instantiate(playerPrefab, startPos.position, startPos.rotation)
-                : Instantiate(playerPrefab);
-
-            // Spawn player on the network
-            NetworkServer.AddPlayerForConnection(conn, player);
-            
-            Debug.Log($"[NetworkManager] Player added for connection {conn.connectionId}");
-
-            // Check if we have enough players to start the game
-            if (_connectedPlayers >= _minPlayers)
+            if (NetworkManager.Singleton.IsServer)
             {
-                CheckGameStart();
+                _connectedPlayers++;
+                Debug.Log($"[NetworkManager] Player connected. Total players: {_connectedPlayers}/{_maxPlayers}");
+
+                // Check if we have enough players to start the game
+                if (_connectedPlayers >= _minPlayers)
+                {
+                    CheckGameStart();
+                }
+            }
+
+            if (NetworkManager.Singleton.IsClient && clientId == NetworkManager.Singleton.LocalClientId)
+            {
+                Debug.Log("[NetworkManager] Successfully connected to server");
+            }
+        }
+
+        private void OnClientDisconnected(ulong clientId)
+        {
+            if (NetworkManager.Singleton.IsServer)
+            {
+                _connectedPlayers--;
+                Debug.Log($"[NetworkManager] Player disconnected. Total players: {_connectedPlayers}/{_maxPlayers}");
+            }
+
+            if (NetworkManager.Singleton.IsClient && clientId == NetworkManager.Singleton.LocalClientId)
+            {
+                Debug.Log("[NetworkManager] Disconnected from server");
             }
         }
 
@@ -72,12 +119,12 @@ namespace CardGame.Network
             {
                 Debug.Log($"[NetworkManager] Minimum players reached ({_connectedPlayers}/{_minPlayers}). Game can start!");
                 // Signal game start
-                RpcGameReady();
+                GameReadyClientRpc();
             }
         }
 
-        [ClientRpc]
-        private void RpcGameReady()
+        [Unity.Netcode.Rpc(SendTo.Everyone)]
+        private void GameReadyClientRpc()
         {
             Debug.Log("[NetworkManager] Game is ready to start!");
             
@@ -87,25 +134,13 @@ namespace CardGame.Network
             }
         }
 
-        public override void OnClientConnect()
-        {
-            base.OnClientConnect();
-            Debug.Log("[NetworkManager] Successfully connected to server");
-        }
-
-        public override void OnClientDisconnect()
-        {
-            base.OnClientDisconnect();
-            Debug.Log("[NetworkManager] Disconnected from server");
-        }
-
-        public override Transform GetStartPosition()
+        private Transform GetStartPosition()
         {
             if (_playerSpawnPoints == null || _playerSpawnPoints.Length == 0)
-                return base.GetStartPosition();
+                return transform;
 
-            // Get spawn point based on connection ID
-            int spawnIndex = numPlayers % _playerSpawnPoints.Length;
+            // Get spawn point based on connected players count
+            int spawnIndex = _connectedPlayers % _playerSpawnPoints.Length;
             return _playerSpawnPoints[spawnIndex];
         }
 
@@ -114,7 +149,7 @@ namespace CardGame.Network
         /// </summary>
         public void StartHost()
         {
-            NetworkManager.singleton.StartHost();
+            NetworkManager.Singleton.StartHost();
             Debug.Log("[NetworkManager] Started as Host");
         }
 
@@ -123,18 +158,17 @@ namespace CardGame.Network
         /// </summary>
         public void StartServer()
         {
-            NetworkManager.singleton.StartServer();
+            NetworkManager.Singleton.StartServer();
             Debug.Log("[NetworkManager] Started as Server");
         }
 
         /// <summary>
         /// Connects as a client to the specified address.
         /// </summary>
-        public void StartClient(string address = "localhost")
+        public void StartClient()
         {
-            networkAddress = address;
-            NetworkManager.singleton.StartClient();
-            Debug.Log($"[NetworkManager] Connecting to {address}");
+            NetworkManager.Singleton.StartClient();
+            Debug.Log("[NetworkManager] Connecting to server");
         }
 
         /// <summary>
@@ -142,20 +176,11 @@ namespace CardGame.Network
         /// </summary>
         public void StopNetwork()
         {
-            if (NetworkServer.active && NetworkClient.isConnected)
+            if (NetworkManager.Singleton != null)
             {
-                NetworkManager.singleton.StopHost();
+                NetworkManager.Singleton.Shutdown();
+                Debug.Log("[NetworkManager] Network stopped");
             }
-            else if (NetworkClient.isConnected)
-            {
-                NetworkManager.singleton.StopClient();
-            }
-            else if (NetworkServer.active)
-            {
-                NetworkManager.singleton.StopServer();
-            }
-
-            Debug.Log("[NetworkManager] Network stopped");
         }
     }
 }
