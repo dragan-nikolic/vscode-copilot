@@ -11,14 +11,14 @@ A multiplayer card game built with Unity, featuring online gameplay, card mechan
 - [x] Set up version control (Git with .gitignore for Unity)
 - [x] Create folder structure
 - [x] Set up core architecture patterns (MVC/MVVM)
-- [ ] Create basic scene structure
+- [x] Create basic scene structure
 
 ### Phase 2: Card System Foundation (Week 2-3)
-- [ ] Design card data structure (ScriptableObjects)
-- [ ] Create Card class with properties (name, cost, effect, artwork)
-- [ ] Implement card database/collection system
-- [ ] Create card visual prefab
-- [ ] Build card UI display system
+- [x] Design card data structure (ScriptableObjects)
+- [x] Create Card class with properties (name, cost, effect, artwork)
+- [x] Implement card database/collection system
+- [x] Create card visual prefab
+- [x] Build card UI display system
 - [ ] Implement card hover/selection mechanics
 
 ### Phase 3: Game Rules & Logic (Week 3-5)
