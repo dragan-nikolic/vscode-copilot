@@ -31,6 +31,14 @@ namespace CardGame.Game
         [Header("Deck")]
         [SerializeField] private Cards.CardDatabase _cardDatabase;
 
+        [Header("Card Layout")]
+        [SerializeField] private float _cardSpacing = 0.3f; // Space between cards
+        [SerializeField] private float _cardOverlap = 0.7f; // How much cards overlap (0-1, higher = more overlap)
+
+        [Header("Testing")]
+        [SerializeField] private bool _testModeWithoutNetwork = false;
+        [SerializeField] private KeyCode _testSpawnKey = KeyCode.Space;
+
         private List<GameObject> _allCards = new List<GameObject>();
         private Dictionary<int, List<GameObject>> _playerHands = new Dictionary<int, List<GameObject>>();
         private List<GameObject> _talonCards = new List<GameObject>();
@@ -38,6 +46,16 @@ namespace CardGame.Game
         private void Start()
         {
             ValidateSetup();
+        }
+
+        private void Update()
+        {
+            // Allow testing card spawn with spacebar
+            if (_testModeWithoutNetwork && Input.GetKeyDown(_testSpawnKey))
+            {
+                Debug.Log("[GameSetup] Test mode: Spawning cards...");
+                SetupGame();
+            }
         }
 
         /// <summary>
@@ -87,7 +105,7 @@ namespace CardGame.Game
         {
             List<Cards.CardData> deck = new List<Cards.CardData>();
 
-            if (_cardDatabase != null && _cardDatabase.Cards != null)
+            if (_cardDatabase != null && _cardDatabase.Cards != null && _cardDatabase.Cards.Count > 0)
             {
                 // Use cards from database (ensure there are at least 32 unique cards)
                 deck.AddRange(_cardDatabase.Cards.Take(_totalCards));
@@ -100,18 +118,97 @@ namespace CardGame.Game
             }
             else
             {
-                Debug.LogWarning("[GameSetup] No card database assigned! Creating placeholder cards.");
+                Debug.LogWarning("[GameSetup] No card database assigned or empty! Creating test cards in memory.");
                 
-                // Create placeholder card data if no database is assigned
-                for (int i = 0; i < _totalCards; i++)
-                {
-                    // TODO: Create actual card data from database
-                    // For now, this is a placeholder
-                }
+                // Create test cards in memory for testing
+                deck = CreateTestDeck();
             }
 
             Debug.Log($"[GameSetup] Created deck with {deck.Count} cards");
             return deck;
+        }
+
+        /// <summary>
+        /// Creates a test deck of 32 cards in memory for testing purposes.
+        /// </summary>
+        private List<Cards.CardData> CreateTestDeck()
+        {
+            List<Cards.CardData> testDeck = new List<Cards.CardData>();
+            Cards.CardSuit[] suits = { Cards.CardSuit.Hearts, Cards.CardSuit.Diamonds, 
+                                       Cards.CardSuit.Clubs, Cards.CardSuit.Spades };
+            Cards.CardRank[] ranks = { Cards.CardRank.Seven, Cards.CardRank.Eight, 
+                                       Cards.CardRank.Nine, Cards.CardRank.Ten,
+                                       Cards.CardRank.Jack, Cards.CardRank.Queen, 
+                                       Cards.CardRank.King, Cards.CardRank.Ace };
+
+            // Load sprites from textures
+            Sprite[] cardSprites = Resources.LoadAll<Sprite>("Asset_PlayingCards/Textures/Deck01");
+            if (cardSprites == null || cardSprites.Length == 0)
+            {
+                // Try loading directly
+                Texture2D texture = Resources.Load<Texture2D>("Asset_PlayingCards/Textures/Deck01");
+                if (texture != null)
+                {
+                    Debug.Log($"[GameSetup] Loaded texture but no sprites. Check import settings.");
+                }
+                else
+                {
+                    Debug.LogWarning("[GameSetup] Could not load card sprites from Resources.");
+                }
+            }
+            else
+            {
+                Debug.Log($"[GameSetup] Loaded {cardSprites.Length} card sprites");
+            }
+
+            foreach (var suit in suits)
+            {
+                foreach (var rank in ranks)
+                {
+                    Cards.CardData testCard = ScriptableObject.CreateInstance<Cards.CardData>();
+                    // Use reflection to set private fields for testing
+                    var suitField = typeof(Cards.CardData).GetField("_suit", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    var rankField = typeof(Cards.CardData).GetField("_rank", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    var valueField = typeof(Cards.CardData).GetField("_value", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    var cardFaceField = typeof(Cards.CardData).GetField("_cardFace", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    
+                    suitField?.SetValue(testCard, suit);
+                    rankField?.SetValue(testCard, rank);
+                    valueField?.SetValue(testCard, (int)rank);
+                    
+                    // Try to find matching sprite
+                    if (cardSprites != null && cardSprites.Length > 0)
+                    {
+                        string spriteName = GetSpriteNameForCard(suit, rank);
+                        Sprite matchingSprite = System.Array.Find(cardSprites, s => s.name.Contains(spriteName));
+                        if (matchingSprite != null)
+                        {
+                            cardFaceField?.SetValue(testCard, matchingSprite);
+                        }
+                    }
+                    
+                    testDeck.Add(testCard);
+                }
+            }
+
+            Debug.Log($"[GameSetup] Created {testDeck.Count} test cards");
+            return testDeck;
+        }
+
+        /// <summary>
+        /// Gets the sprite name pattern for a card.
+        /// </summary>
+        private string GetSpriteNameForCard(Cards.CardSuit suit, Cards.CardRank rank)
+        {
+            string suitName = suit.ToString();
+            string rankName = rank.ToString();
+            
+            // Common naming patterns in card sprite sheets
+            return $"{suitName}_{rankName}";
         }
 
         /// <summary>
@@ -154,7 +251,8 @@ namespace CardGame.Game
                 {
                     if (cardIndex < deck.Count)
                     {
-                        GameObject card = CreateCard(deck[cardIndex], playerIndex);
+                        int cardIndexInHand = _playerHands[playerIndex].Count;
+                        GameObject card = CreateCard(deck[cardIndex], playerIndex, false, cardIndexInHand);
                         _playerHands[playerIndex].Add(card);
                         cardIndex++;
                     }
@@ -164,7 +262,7 @@ namespace CardGame.Game
             // Place remaining cards in talon (face down)
             for (int i = 0; i < _remainingCards && cardIndex < deck.Count; i++)
             {
-                GameObject talonCard = CreateCard(deck[cardIndex], -1, true);
+                GameObject talonCard = CreateCard(deck[cardIndex], -1, true, i);
                 _talonCards.Add(talonCard);
                 cardIndex++;
             }
@@ -176,7 +274,7 @@ namespace CardGame.Game
         /// <summary>
         /// Creates a card game object.
         /// </summary>
-        private GameObject CreateCard(Cards.CardData cardData, int playerIndex, bool faceDown = false)
+        private GameObject CreateCard(Cards.CardData cardData, int playerIndex, bool faceDown = false, int cardIndexInHand = 0)
         {
             if (_cardPrefab == null)
             {
@@ -187,7 +285,18 @@ namespace CardGame.Game
             // Determine spawn position based on player index
             Transform spawnPosition = GetPlayerHandPosition(playerIndex);
             
-            GameObject cardObject = Instantiate(_cardPrefab, spawnPosition.position, spawnPosition.rotation);
+            // Calculate card offset for fanning/spreading
+            Vector3 offset = CalculateCardOffset(cardIndexInHand, playerIndex);
+            Vector3 finalPosition = spawnPosition.position + offset;
+            
+            GameObject cardObject = Instantiate(_cardPrefab, finalPosition, spawnPosition.rotation);
+            
+            // Set sorting order so cards overlap correctly
+            SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.sortingOrder = cardIndexInHand;
+            }
             
             // Set up card component
             Cards.Card cardComponent = cardObject.GetComponent<Cards.Card>();
@@ -199,6 +308,23 @@ namespace CardGame.Game
 
             _allCards.Add(cardObject);
             return cardObject;
+        }
+
+        /// <summary>
+        /// Calculates the position offset for a card based on its index in hand.
+        /// </summary>
+        private Vector3 CalculateCardOffset(int cardIndex, int playerIndex)
+        {
+            // Center the cards around the hand position
+            float totalWidth = (_cardsPerPlayer - 1) * _cardSpacing * (1 - _cardOverlap);
+            float startOffset = -totalWidth / 2f;
+            
+            float xOffset = startOffset + (cardIndex * _cardSpacing * (1 - _cardOverlap));
+            
+            // Slight vertical offset for visual depth (optional)
+            float zOffset = cardIndex * 0.01f; // Small Z offset for proper layering
+            
+            return new Vector3(xOffset, 0, zOffset);
         }
 
         /// <summary>

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cdf4d729e7ad4a268d7977fe847f36c, type: 3}
   m_Name: CJ
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
-  _cardId: 
+  _cardId: Hearts_0
   _suit: 0
   _rank: 0
   _value: 0
-  _cardFace: {fileID: 0}
-  _cardBack: {fileID: 0}
+  _cardFace: {fileID: 1509981241815906335, guid: 5f0074f1c36da4a71bf1a5e1528a2f35, type: 3}
+  _cardBack: {fileID: 1842537641911522891, guid: 5f0074f1c36da4a71bf1a5e1528a2f35, type: 3}
