@@ -3,70 +3,68 @@ using UnityEngine;
 namespace CardGame.Cards
 {
     /// <summary>
-    /// Types of cards available in the game.
+    /// Card suits for traditional playing cards.
     /// </summary>
-    public enum CardType
+    public enum CardSuit
     {
-        Creature,
-        Spell,
-        Enchantment
+        Hearts,
+        Diamonds,
+        Clubs,
+        Spades
     }
 
     /// <summary>
-    /// Rarity levels for cards.
+    /// Card ranks for traditional playing cards.
     /// </summary>
-    public enum CardRarity
+    public enum CardRank
     {
-        Common,
-        Uncommon,
-        Rare,
-        Epic,
-        Legendary
+        Seven = 7,
+        Eight = 8,
+        Nine = 9,
+        Ten = 10,
+        Jack = 11,
+        Queen = 12,
+        King = 13,
+        Ace = 14
     }
 
     /// <summary>
-    /// ScriptableObject that stores card data.
+    /// ScriptableObject that stores traditional playing card data.
     /// </summary>
     [CreateAssetMenu(fileName = "New Card", menuName = "Card Game/Card Data")]
     public class CardData : ScriptableObject
     {
         [Header("Basic Info")]
-        [SerializeField] private string _cardName;
         [SerializeField] private string _cardId; // Unique identifier
-        [TextArea(3, 6)]
-        [SerializeField] private string _description;
         
         [Header("Card Properties")]
-        [SerializeField] private CardType _cardType;
-        [SerializeField] private CardRarity _rarity;
-        [SerializeField] private int _manaCost;
-        
-        [Header("Stats (for Creatures)")]
-        [SerializeField] private int _attack;
-        [SerializeField] private int _health;
+        [SerializeField] private CardSuit _suit;
+        [SerializeField] private CardRank _rank;
+        [SerializeField] private int _value; // Point value for scoring
         
         [Header("Visuals")]
-        [SerializeField] private Sprite _cardArtwork;
-        [SerializeField] private Sprite _cardFrame;
+        [SerializeField] private Sprite _cardFace; // Front of the card
+        [SerializeField] private Sprite _cardBack; // Back of the card
 
         // Properties
-        public string CardName => _cardName;
         public string CardId => _cardId;
-        public string Description => _description;
-        public CardType Type => _cardType;
-        public CardRarity Rarity => _rarity;
-        public int ManaCost => _manaCost;
-        public int Attack => _attack;
-        public int Health => _health;
-        public Sprite CardArtwork => _cardArtwork;
-        public Sprite CardFrame => _cardFrame;
+        public CardSuit Suit => _suit;
+        public CardRank Rank => _rank;
+        public int Value => _value;
+        public Sprite CardFace => _cardFace;
+        public Sprite CardBack => _cardBack;
+        
+        /// <summary>
+        /// Gets the full card name (e.g., "Ace of Hearts").
+        /// </summary>
+        public string CardName => $"{_rank} of {_suit}";
 
         private void OnValidate()
         {
             // Auto-generate card ID if empty
             if (string.IsNullOrEmpty(_cardId))
             {
-                _cardId = System.Guid.NewGuid().ToString();
+                _cardId = $"{_suit}_{_rank}";
             }
         }
     }

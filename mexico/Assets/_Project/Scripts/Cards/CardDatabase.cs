@@ -27,19 +27,19 @@ namespace CardGame.Cards
         }
 
         /// <summary>
-        /// Gets all cards of a specific type.
+        /// Gets all cards of a specific suit.
         /// </summary>
-        public List<CardData> GetCardsByType(CardType type)
+        public List<CardData> GetCardsBySuit(CardSuit suit)
         {
-            return _cards.FindAll(card => card.Type == type);
+            return _cards.FindAll(card => card.Suit == suit);
         }
 
         /// <summary>
-        /// Gets all cards of a specific rarity.
+        /// Gets all cards of a specific rank.
         /// </summary>
-        public List<CardData> GetCardsByRarity(CardRarity rarity)
+        public List<CardData> GetCardsByRank(CardRank rank)
         {
-            return _cards.FindAll(card => card.Rarity == rarity);
+            return _cards.FindAll(card => card.Rank == rank);
         }
 
         /// <summary>

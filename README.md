@@ -6,6 +6,13 @@ The purpose of this project is to learn using github copilot in vs code.
 
 Install extension: GitHub Copilot
 
+## todos
+
+### Address Input Manager warning
+
+This project uses Input Manager, which is marked for deprecation. To manage input in your project, use the Input System package instead.
+
+
 ## references
 
 * [How to use GitHub Copilot (the complete beginner's guide)](https://www.youtube.com/watch?v=SJqGYwRq0uc)

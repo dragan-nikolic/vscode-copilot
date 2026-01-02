@@ -11,16 +11,10 @@ namespace CardGame.Cards
         [SerializeField] private CardData _data;
 
         [Header("Runtime State")]
-        [SerializeField] private int _currentAttack;
-        [SerializeField] private int _currentHealth;
-        [SerializeField] private bool _canAttack = false;
         [SerializeField] private bool _isFaceDown = false;
 
         // Properties
         public CardData Data => _data;
-        public int CurrentAttack => _currentAttack;
-        public int CurrentHealth => _currentHealth;
-        public bool CanAttack => _canAttack;
         public bool IsFaceDown => _isFaceDown;
 
         // Events
@@ -43,8 +37,7 @@ namespace CardGame.Cards
                 return;
             }
 
-            _currentAttack = _data.Attack;
-            _currentHealth = _data.Health;
+            Debug.Log($"[Card] Initialized {_data.CardName}");
         }
 
         /// <summary>
@@ -74,38 +67,7 @@ namespace CardGame.Cards
             Debug.Log($"[Card] Playing card: {_data.CardName}");
             OnCardPlayed?.Invoke(this);
             
-            // TODO: Implement card effects based on type
-            switch (_data.Type)
-            {
-                case CardType.Creature:
-                    SummonCreature();
-                    break;
-                case CardType.Spell:
-                    CastSpell();
-                    break;
-                case CardType.Enchantment:
-                    ApplyEnchantment();
-                    break;
-            }
-        }
-
-        private void SummonCreature()
-        {
-            Debug.Log($"[Card] Summoning creature: {_data.CardName}");
-            // Creatures can't attack on the turn they're summoned (summoning sickness)
-            _canAttack = false;
-        }
-
-        private void CastSpell()
-        {
-            Debug.Log($"[Card] Casting spell: {_data.CardName}");
-            // Spells have immediate effects and go to the discard pile
-        }
-
-        private void ApplyEnchantment()
-        {
-            Debug.Log($"[Card] Applying enchantment: {_data.CardName}");
-            // Enchantments remain on the board with ongoing effects
+            // TODO: Implement card playing logic for your game
         }
 
         /// <summary>
@@ -113,26 +75,17 @@ namespace CardGame.Cards
         /// </summary>
         public void OnTurnStart()
         {
-            if (_data.Type == CardType.Creature)
-            {
-                _canAttack = true; // Remove summoning sickness
-            }
+            Debug.Log($"[Card] Turn started for {_data.CardName}");
+            // TODO: Implement turn start logic
         }
 
         /// <summary>
-        /// Deals damage to this card (for creatures).
+        /// Handles card interactions.
         /// </summary>
         public void TakeDamage(int damage)
         {
-            if (_data.Type != CardType.Creature) return;
-
-            _currentHealth -= damage;
-            Debug.Log($"[Card] {_data.CardName} took {damage} damage. Health: {_currentHealth}");
-
-            if (_currentHealth <= 0)
-            {
-                DestroyCard();
-            }
+            Debug.Log($"[Card] {_data.CardName} interaction");
+            // TODO: Implement card interaction logic
         }
 
         /// <summary>
