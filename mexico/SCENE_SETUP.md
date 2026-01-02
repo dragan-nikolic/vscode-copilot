@@ -64,30 +64,49 @@ CardGameScene
    - Cards Per Player: 10
    - Remaining Cards: 2
    - Player Count: 3
-4. Assign Card Prefab
+4. Assign Card Prefab (see step 5 first - use your custom card prefab variant from `Assets/_Project/Prefabs/`)
 5. Create and assign spawn positions (see below)
 
 ### 2. Set Up Player Positions
 
-Create three player positions arranged in a triangle:
+Create three player position GameObjects arranged in a triangle. These are empty GameObjects that serve as spatial anchors for card placement - they don't represent the player themselves, just the locations where their cards will be positioned.
+
+**How to create:**
+1. Right-click in Hierarchy → Create Empty
+2. Rename to "Player1Position" (or "Player2Position", "Player3Position")
+3. Set Transform values as specified below
+4. Create child GameObjects for HandArea and PlayArea
 
 **Player 1 (Bottom/Local Player):**
-- Position: (0, 0, 0)
-- Rotation: (0, 0, 0)
-- Create child "HandArea" at (0, -2, 0)
-- Create child "PlayArea" at (0, 0, 0)
+1. Create empty GameObject "Player1Position"
+   - Position: (0, 0, 0)
+   - Rotation: (0, 0, 0)
+2. Right-click Player1Position → Create Empty
+   - Rename to "HandArea"
+   - Position: (0, -2, 0)
+3. Right-click Player1Position → Create Empty
+   - Rename to "PlayArea"
+   - Position: (0, 0, 0)
 
 **Player 2 (Top Left):**
-- Position: (-5, 0, 5)
-- Rotation: (0, 60, 0)
-- Create child "HandArea" at local (0, -2, 0)
-- Create child "PlayArea" at local (0, 0, 0)
+1. Create empty GameObject "Player2Position"
+   - Position: (-5, 0, 5)
+   - Rotation: (0, 60, 0)
+2. Create child "HandArea"
+   - Local Position: (0, -2, 0)
+3. Create child "PlayArea"
+   - Local Position: (0, 0, 0)
 
 **Player 3 (Top Right):**
-- Position: (5, 0, 5)
-- Rotation: (0, -60, 0)
-- Create child "HandArea" at local (0, -2, 0)
-- Create child "PlayArea" at local (0, 0, 0)
+1. Create empty GameObject "Player3Position"
+   - Position: (5, 0, 5)
+   - Rotation: (0, -60, 0)
+2. Create child "HandArea"
+   - Local Position: (0, -2, 0)
+3. Create child "PlayArea"
+   - Local Position: (0, 0, 0)
+
+**Note:** These are just position markers. Cards will be spawned at these locations during game setup.
 
 ### 3. Create Center Area
 
