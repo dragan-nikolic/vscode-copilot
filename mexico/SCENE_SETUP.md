@@ -108,20 +108,29 @@ In the GameSetup component:
 - Player 3 Hand Position → Player3Position/HandArea
 - Talon Position → Center/Talon
 
-### 5. Create Card Prefab
+### 5. Use Imported Card Asset
 
-If not already created:
+Using the free Playing Cards asset pack:
 
-1. Create empty GameObject "Card"
-2. Add components:
-   - `Card` (your script)
-   - `NetworkObject` (for networking)
-   - `NetworkCard` (for network sync)
-3. Add visual representation:
-   - Quad or Sprite for card face
-   - Quad or Sprite for card back
-4. Save as prefab in `Assets/_Project/Prefabs/`
-5. Assign to GameSetup's "Card Prefab" field
+1. **Choose a Card Prefab:**
+   - Navigate to `Assets/Asset_PlayingCards/Prefabs/Deck01/`
+   - Choose any card prefab (e.g., `Deck01_Heart_A.prefab`)
+   - These already have proper 3D models and textures
+
+2. **Add Required Components:**
+   - Drag the chosen prefab into the scene
+   - Add your custom components:
+     - `Card` (your script)
+     - `NetworkObject` (for networking)
+     - `NetworkCard` (for network sync)
+   - Apply changes back to prefab or save as a new prefab variant
+
+3. **Create a Card Template:**
+   - Option A: Use one of the existing prefabs and add your scripts
+   - Option B: Create a prefab variant in `Assets/_Project/Prefabs/`
+   - Assign to GameSetup's "Card Prefab" field
+
+**Note:** The asset pack includes individual card prefabs (Deck01_Heart_A, Deck01_Spade_K, etc.). You can use any as your base template - your Card script will handle the card data/logic.
 
 ### 6. Camera Setup
 
