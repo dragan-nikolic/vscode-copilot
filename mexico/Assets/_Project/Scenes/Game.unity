@@ -665,7 +665,7 @@ Transform:
   m_GameObject: {fileID: 578506592}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4, y: 2, z: 0}
+  m_LocalPosition: {x: 2, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1557,7 +1557,7 @@ Transform:
   m_GameObject: {fileID: 1145951505}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4, y: 2, z: 0}
+  m_LocalPosition: {x: -2, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1987,6 +1987,8 @@ MonoBehaviour:
   _player3HandPosition: {fileID: 578506593}
   _talonPosition: {fileID: 1683470015}
   _cardDatabase: {fileID: 11400000, guid: 59f34698ad5934472bb9b8a5711090ca, type: 2}
+  _cardSpacing: 0.5
+  _cardOverlap: 0.1
   _testModeWithoutNetwork: 1
   _testSpawnKey: 32
 --- !u!4 &1559888348
@@ -2238,7 +2240,7 @@ Transform:
   m_GameObject: {fileID: 1683470014}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 3}
+  m_LocalPosition: {x: 2, y: 0, z: 3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

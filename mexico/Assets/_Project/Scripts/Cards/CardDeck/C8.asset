@@ -16,5 +16,5 @@ MonoBehaviour:
   _suit: 2
   _rank: 8
   _value: 0
-  _cardFace: {fileID: -1429224361115236405, guid: 5f0074f1c36da4a71bf1a5e1528a2f35, type: 3}
-  _cardBack: {fileID: 1842537641911522891, guid: 5f0074f1c36da4a71bf1a5e1528a2f35, type: 3}
+  _cardFace: {fileID: 21300000, guid: 946dc6769e7c91741ad228a2d009db24, type: 3}
+  _cardBack: {fileID: 21300000, guid: 7fa84d23d253cfe4d8faf8872d9cce21, type: 3}
