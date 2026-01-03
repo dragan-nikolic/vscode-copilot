@@ -172,15 +172,6 @@ namespace CardGame.Cards
         }
 
         /// <summary>
-        /// Handles card interactions.
-        /// </summary>
-        public void TakeDamage(int damage)
-        {
-            Debug.Log($"[Card] {_data.CardName} interaction");
-            // TODO: Implement card interaction logic
-        }
-
-        /// <summary>
         /// Destroys this card.
         /// </summary>
         public void DestroyCard()

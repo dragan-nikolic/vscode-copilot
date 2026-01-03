@@ -27,16 +27,10 @@ namespace CardGame.Game
         [SerializeField] private GameState _currentState = GameState.MainMenu;
 
         [Header("Game Settings")]
-        [SerializeField] private int _startingHandSize = 5;
-        [SerializeField] private int _maxHandSize = 10;
-        [SerializeField] private int _startingHealth = 30;
-        [SerializeField] private int _startingMana = 1;
+        [SerializeField] private int _totalCards = 32;
+        [SerializeField] private int _cardsPerPlayer = 10;
 
         public GameState CurrentState => _currentState;
-        public int StartingHandSize => _startingHandSize;
-        public int MaxHandSize => _maxHandSize;
-        public int StartingHealth => _startingHealth;
-        public int StartingMana => _startingMana;
 
         // Events
         public event System.Action<GameState> OnGameStateChanged;
@@ -104,13 +98,9 @@ namespace CardGame.Game
 
         private void StartGame()
         {
-            Debug.Log("[GameManager] Starting new game...");
-            // TODO: Initialize game components
-            // - Shuffle decks
-            // - Draw starting hands
-            // - Set starting resources
-            // - Determine first player
-        }
+            Debug.Log("[GameManager] Starting Mexico match...");
+            // Transition to Bidding after setup is done
+            ChangeState(GameState.Bidding);        }
 
         private void EndGame()
         {

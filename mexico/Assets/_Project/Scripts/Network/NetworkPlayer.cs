@@ -12,8 +12,6 @@ namespace CardGame.Network
     {
         [Header("Player Info")]
         private NetworkVariable<FixedString64Bytes> _playerName = new NetworkVariable<FixedString64Bytes>();
-        private NetworkVariable<int> _playerHealth = new NetworkVariable<int>();
-        private NetworkVariable<int> _playerMana = new NetworkVariable<int>();
         private NetworkVariable<bool> _isPlayerTurn = new NetworkVariable<bool>();
         private NetworkVariable<int> _currentBid = new NetworkVariable<int>(0);
         private NetworkVariable<bool> _hasPassed = new NetworkVariable<bool>(false);
@@ -22,15 +20,11 @@ namespace CardGame.Network
         // [SerializeField] private Player.Player _localPlayer; // TODO: Create Player class
 
         public string PlayerName => _playerName.Value.ToString();
-        public int PlayerHealth => _playerHealth.Value;
-        public int PlayerMana => _playerMana.Value;
         public bool IsPlayerTurn => _isPlayerTurn.Value;
         public int CurrentBid => _currentBid.Value;
         public bool HasPassed => _hasPassed.Value;
 
         // Events
-        public event System.Action<int> OnHealthChanged;
-        public event System.Action<int> OnManaChanged;
         public event System.Action<bool> OnTurnChanged;
 
         public override void OnNetworkSpawn()
@@ -39,16 +33,10 @@ namespace CardGame.Network
 
             if (IsServer)
             {
-                // Initialize server-side values
-                _playerHealth.Value = Game.GameManager.Instance.StartingHealth;
-                _playerMana.Value = Game.GameManager.Instance.StartingMana;
-                
                 Debug.Log($"[NetworkPlayer] Server initialized player {NetworkObjectId}");
             }
 
             // Subscribe to network variable changes on all clients
-            _playerHealth.OnValueChanged += OnHealthChangedCallback;
-            _playerMana.OnValueChanged += OnManaChangedCallback;
             _isPlayerTurn.OnValueChanged += OnTurnChangedCallback;
 
             Debug.Log($"[NetworkPlayer] Client initialized for player {NetworkObjectId}");
@@ -67,8 +55,6 @@ namespace CardGame.Network
             base.OnNetworkDespawn();
 
             // Unsubscribe from network variable changes
-            _playerHealth.OnValueChanged -= OnHealthChangedCallback;
-            _playerMana.OnValueChanged -= OnManaChangedCallback;
             _isPlayerTurn.OnValueChanged -= OnTurnChangedCallback;
         }
 
@@ -80,55 +66,6 @@ namespace CardGame.Network
         {
             _playerName.Value = name;
             Debug.Log($"[NetworkPlayer] Player name set to {name}");
-        }
-
-        /// <summary>
-        /// Updates player health (called by server).
-        /// </summary>
-        public void SetHealth(int health)
-        {
-            if (!IsServer) return;
-
-            _playerHealth.Value = Mathf.Max(0, health);
-            HealthChangedClientRpc(_playerHealth.Value);
-        }
-
-        [Rpc(SendTo.Everyone)]
-        private void HealthChangedClientRpc(int newHealth)
-        {
-            Debug.Log($"[NetworkPlayer] Health changed to {newHealth}");
-            
-            if (newHealth <= 0)
-            {
-                Debug.Log($"[NetworkPlayer] Player {PlayerName} has been defeated!");
-            }
-        }
-
-        private void OnHealthChangedCallback(int oldHealth, int newHealth)
-        {
-            OnHealthChanged?.Invoke(newHealth);
-        }
-
-        /// <summary>
-        /// Updates player mana (called by server).
-        /// </summary>
-        public void SetMana(int mana)
-        {
-            if (!IsServer) return;
-
-            _playerMana.Value = Mathf.Max(0, mana);
-            ManaChangedClientRpc(_playerMana.Value);
-        }
-
-        [Rpc(SendTo.Everyone)]
-        private void ManaChangedClientRpc(int newMana)
-        {
-            Debug.Log($"[NetworkPlayer] Mana changed to {newMana}");
-        }
-
-        private void OnManaChangedCallback(int oldMana, int newMana)
-        {
-            OnManaChanged?.Invoke(newMana);
         }
 
         /// <summary>
@@ -165,17 +102,10 @@ namespace CardGame.Network
                 return;
             }
 
-            if (_playerMana.Value < 1) // TODO: Check actual card cost
-            {
-                Debug.LogWarning("[NetworkPlayer] Cannot play card - not enough mana!");
-                return;
-            }
-
             Debug.Log($"[NetworkPlayer] Player {PlayerName} plays card {cardNetId}");
             
             // TODO: Implement card play logic
             // - Validate card in hand
-            // - Check mana cost
             // - Apply card effect
             // - Update game state
             
@@ -209,26 +139,6 @@ namespace CardGame.Network
                 // Switch to next player
                 SetTurn(false);
             }
-        }
-
-        /// <summary>
-        /// Deals damage to this player (called by server).
-        /// </summary>
-        public void TakeDamage(int damage)
-        {
-            if (!IsServer) return;
-
-            int newHealth = _playerHealth.Value - damage;
-            SetHealth(newHealth);
-            
-            ShowDamageClientRpc(damage);
-        }
-
-        [Rpc(SendTo.Everyone)]
-        private void ShowDamageClientRpc(int damage)
-        {
-            Debug.Log($"[NetworkPlayer] {PlayerName} took {damage} damage!");
-            // TODO: Show damage visual effect
         }
 
         /// <summary>
