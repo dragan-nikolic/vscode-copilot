@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D10
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
   _cardId: Diamonds_Ten
-  _suit: 1
+  _suit: 2
   _rank: 10
   _value: 0
   _cardFace: {fileID: 21300000, guid: 8a6899be38cdb3c4e8d33d10c9877586, type: 3}

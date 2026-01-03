@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D8
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
   _cardId: Diamonds_Eight
-  _suit: 1
+  _suit: 2
   _rank: 8
   _value: 0
   _cardFace: {fileID: 21300000, guid: 122128a9c9c5de14c9f8a812b67556c5, type: 3}

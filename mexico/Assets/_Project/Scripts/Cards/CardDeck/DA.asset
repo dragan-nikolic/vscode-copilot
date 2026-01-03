@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DA
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
   _cardId: Diamonds_Ace
-  _suit: 1
+  _suit: 2
   _rank: 14
   _value: 0
   _cardFace: {fileID: 21300000, guid: 3aa2275fa01afa24a99caf9667f892c7, type: 3}

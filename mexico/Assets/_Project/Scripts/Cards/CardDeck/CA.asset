@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CA
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
   _cardId: Clubs_Ace
-  _suit: 2
+  _suit: 1
   _rank: 14
   _value: 0
   _cardFace: {fileID: 21300000, guid: ac6e44781f40ebc44a93777df2f4c37b, type: 3}

@@ -94,6 +94,8 @@ namespace CardGame.Game
             // Distribute cards
             DistributeCards(deck);
 
+            SortPlayerHands();
+
             Debug.Log($"[GameSetup] Game setup complete. " +
                 $"Players: {_playerCount}, Cards per player: {_cardsPerPlayer}, Talon: {_remainingCards}");
         }
@@ -240,6 +242,45 @@ namespace CardGame.Game
                 $"{_cardsPerPlayer} to each of {_playerCount} players, {_remainingCards} to talon");
         }
 
+        public void SortPlayerHands()
+        {
+            List<int> playerIndices = _playerHands.Keys.ToList();
+
+            foreach (int playerIndex in playerIndices)
+            {
+                List<GameObject> hand = _playerHands[playerIndex];
+
+                var sortedHand = hand
+                    .OrderBy(obj => {
+                        var data = obj.GetComponent<Cards.Card>().Data;
+                        return data.Suit switch {
+                            Cards.CardSuit.Hearts => 0,
+                            Cards.CardSuit.Clubs => 1,
+                            Cards.CardSuit.Diamonds => 2,
+                            Cards.CardSuit.Spades => 3,
+                            _ => 4
+                        };
+                    })
+                    // Explicitly cast Rank to int to ensure 11 (Jack) comes after 10
+                    .ThenBy(obj => (int)obj.GetComponent<Cards.Card>().Data.Rank) 
+                    .ToList();
+
+                _playerHands[playerIndex] = sortedHand;
+
+                for (int i = 0; i < sortedHand.Count; i++)
+                {
+                    Transform spawnPosition = GetPlayerHandPosition(playerIndex);
+                    Vector3 offset = CalculateCardOffset(i);
+                    sortedHand[i].transform.position = spawnPosition.position + offset;
+                    
+                    if (sortedHand[i].TryGetComponent<SpriteRenderer>(out var sr))
+                    {
+                        sr.sortingOrder = i;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Creates a card game object.
         /// </summary>
@@ -255,7 +296,7 @@ namespace CardGame.Game
             Transform spawnPosition = GetPlayerHandPosition(playerIndex);
             
             // Calculate card offset for fanning/spreading
-            Vector3 offset = CalculateCardOffset(cardIndexInHand, playerIndex);
+            Vector3 offset = CalculateCardOffset(cardIndexInHand);
             Vector3 finalPosition = spawnPosition.position + offset;
             
             GameObject cardObject = Instantiate(_cardPrefab, finalPosition, spawnPosition.rotation);
@@ -282,7 +323,7 @@ namespace CardGame.Game
         /// <summary>
         /// Calculates the position offset for a card based on its index in hand.
         /// </summary>
-        private Vector3 CalculateCardOffset(int cardIndex, int playerIndex)
+        private Vector3 CalculateCardOffset(int cardIndex)
         {
             // Center the cards around the hand position
             float totalWidth = (_cardsPerPlayer - 1) * _cardSpacing * (1 - _cardOverlap);

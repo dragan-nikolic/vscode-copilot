@@ -8,8 +8,8 @@ namespace CardGame.Cards
     public enum CardSuit
     {
         Hearts,
-        Diamonds,
         Clubs,
+        Diamonds,
         Spades
     }
 

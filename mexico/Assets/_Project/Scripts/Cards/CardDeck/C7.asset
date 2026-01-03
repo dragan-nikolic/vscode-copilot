@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cdf4d729e7ad4a268d7977fe847f36c, type: 3}
   m_Name: C7
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
-  _cardId: Cluns_Seven
-  _suit: 2
+  _cardId: Clubs_Seven
+  _suit: 1
   _rank: 7
   _value: 0
   _cardFace: {fileID: 21300000, guid: 6861daecc00dec54aacfdb7195ef0e21, type: 3}

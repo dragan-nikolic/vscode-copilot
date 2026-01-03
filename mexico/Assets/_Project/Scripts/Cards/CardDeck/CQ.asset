@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CQ
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
   _cardId: Clubs_Queen
-  _suit: 2
+  _suit: 1
   _rank: 12
   _value: 0
   _cardFace: {fileID: 21300000, guid: b2d7d109b20ac1a40837e6d0af7085cb, type: 3}

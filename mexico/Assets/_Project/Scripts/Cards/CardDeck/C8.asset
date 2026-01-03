@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: C8
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
   _cardId: Clubs_Eight
-  _suit: 2
+  _suit: 1
   _rank: 8
   _value: 0
   _cardFace: {fileID: 21300000, guid: 946dc6769e7c91741ad228a2d009db24, type: 3}

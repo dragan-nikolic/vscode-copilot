@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CK
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
   _cardId: Clubs_King
-  _suit: 2
+  _suit: 1
   _rank: 13
   _value: 0
   _cardFace: {fileID: 21300000, guid: 59473f65c49854142ac090023e3a5e8d, type: 3}

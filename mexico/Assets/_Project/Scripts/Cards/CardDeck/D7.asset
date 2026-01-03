@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D7
   m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.CardData
   _cardId: Diamonds_Seven
-  _suit: 1
+  _suit: 2
   _rank: 7
   _value: 0
   _cardFace: {fileID: 21300000, guid: 8fd5bb566f8ffed4d89a45c54bb7d5e1, type: 3}
