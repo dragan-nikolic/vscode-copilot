@@ -141,26 +141,6 @@ namespace CardGame.Game
                                        Cards.CardRank.Jack, Cards.CardRank.Queen, 
                                        Cards.CardRank.King, Cards.CardRank.Ace };
 
-            // Load sprites from textures
-            Sprite[] cardSprites = Resources.LoadAll<Sprite>("Asset_PlayingCards/Textures/Deck01");
-            if (cardSprites == null || cardSprites.Length == 0)
-            {
-                // Try loading directly
-                Texture2D texture = Resources.Load<Texture2D>("Asset_PlayingCards/Textures/Deck01");
-                if (texture != null)
-                {
-                    Debug.Log($"[GameSetup] Loaded texture but no sprites. Check import settings.");
-                }
-                else
-                {
-                    Debug.LogWarning("[GameSetup] Could not load card sprites from Resources.");
-                }
-            }
-            else
-            {
-                Debug.Log($"[GameSetup] Loaded {cardSprites.Length} card sprites");
-            }
-
             foreach (var suit in suits)
             {
                 foreach (var rank in ranks)
@@ -179,17 +159,6 @@ namespace CardGame.Game
                     suitField?.SetValue(testCard, suit);
                     rankField?.SetValue(testCard, rank);
                     valueField?.SetValue(testCard, (int)rank);
-                    
-                    // Try to find matching sprite
-                    if (cardSprites != null && cardSprites.Length > 0)
-                    {
-                        string spriteName = GetSpriteNameForCard(suit, rank);
-                        Sprite matchingSprite = System.Array.Find(cardSprites, s => s.name.Contains(spriteName));
-                        if (matchingSprite != null)
-                        {
-                            cardFaceField?.SetValue(testCard, matchingSprite);
-                        }
-                    }
                     
                     testDeck.Add(testCard);
                 }
