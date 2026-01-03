@@ -12,6 +12,9 @@ Install extension: GitHub Copilot
 
 This project uses Input Manager, which is marked for deprecation. To manage input in your project, use the Input System package instead.
 
+### Clean up NetworkPlayer.cs
+
+Functions like SetHealth and SetMans are not needed, should be removed.
 
 ## references
 

@@ -15,6 +15,8 @@ namespace CardGame.Network
         private NetworkVariable<int> _playerHealth = new NetworkVariable<int>();
         private NetworkVariable<int> _playerMana = new NetworkVariable<int>();
         private NetworkVariable<bool> _isPlayerTurn = new NetworkVariable<bool>();
+        private NetworkVariable<int> _currentBid = new NetworkVariable<int>(0);
+        private NetworkVariable<bool> _hasPassed = new NetworkVariable<bool>(false);
 
         [Header("References")]
         // [SerializeField] private Player.Player _localPlayer; // TODO: Create Player class
@@ -23,6 +25,8 @@ namespace CardGame.Network
         public int PlayerHealth => _playerHealth.Value;
         public int PlayerMana => _playerMana.Value;
         public bool IsPlayerTurn => _isPlayerTurn.Value;
+        public int CurrentBid => _currentBid.Value;
+        public bool HasPassed => _hasPassed.Value;
 
         // Events
         public event System.Action<int> OnHealthChanged;
@@ -226,5 +230,31 @@ namespace CardGame.Network
             Debug.Log($"[NetworkPlayer] {PlayerName} took {damage} damage!");
             // TODO: Show damage visual effect
         }
+
+        /// <summary>
+        /// Client calls this to place a bid.
+        /// </summary>
+        [ServerRpc]
+        public void SubmitBidServerRpc(int bidAmount)
+        {
+            // Basic validation: must be higher than 4 and the current high bid
+            // In Mexico, 10 is the special "Meksiko" bid
+            _currentBid.Value = bidAmount;
+            _hasPassed.Value = false;
+            
+            Debug.Log($"[NetworkPlayer] {PlayerName} bid {bidAmount}");
+            
+            // Logic to move to the next player's turn would go here in your Bidding Manager
+        }
+
+        /// <summary>
+        /// Client calls this to pass.
+        /// </summary>
+        [ServerRpc]
+        public void PassServerRpc()
+        {
+            _hasPassed.Value = true;
+            Debug.Log($"[NetworkPlayer] {PlayerName} passed.");
+        }    
     }
 }

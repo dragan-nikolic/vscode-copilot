@@ -10,7 +10,9 @@ namespace CardGame.Game
         MainMenu,
         Lobby,
         GameStarting,
-        PlayerTurn,
+        Bidding,      // Players bid 5-10
+        TalonPhase,   // Declarer picks up 2 hidden cards and discards
+        PlayerTurn,   // Gameplay starts
         OpponentTurn,
         GameEnding,
         GameOver
@@ -76,6 +78,14 @@ namespace CardGame.Game
                     break;
                 case GameState.GameStarting:
                     StartGame();
+                    break;
+                case GameState.Bidding:
+                    // Enable Bidding UI (Buttons 5, 6, 7, 8, 9, 10, Pass)
+                    break;
+                case GameState.TalonPhase:
+                    // 1. Identify Declarer
+                    // 2. Reveal the 2 cards in _talonPosition to the Declarer
+                    // 3. Allow Declarer to swap 2 cards from their hand
                     break;
                 case GameState.PlayerTurn:
                     // Begin player's turn
