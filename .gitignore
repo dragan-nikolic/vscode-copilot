@@ -79,3 +79,6 @@ crashlytics-build.properties
 
 # Plastic SCM
 .plastic/
+
+# ParrelSync clones
+mexico_clone*/

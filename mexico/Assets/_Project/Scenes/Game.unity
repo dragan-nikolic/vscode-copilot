@@ -769,7 +769,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 686102801}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1962212880}
+        m_TargetAssemblyTypeName: CardGame.Network.MatchmakingManager, CardGame.Core
+        m_MethodName: CreateLobby
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &686102801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1211,7 +1223,7 @@ MonoBehaviour:
     PlayerPrefab: {fileID: 3931491786254269593, guid: 7a54f7c828353449ca5128293159ebff, type: 3}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 0}
+      - {fileID: 11400000, guid: 1b22b13dc957e49f3a0c24acd3af6ab4, type: 2}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
@@ -1654,7 +1666,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1279587814}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1962212880}
+        m_TargetAssemblyTypeName: CardGame.Network.MatchmakingManager, CardGame.Core
+        m_MethodName: JoinLobby
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1279587814
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1934,6 +1958,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1559888348}
+  - component: {fileID: 1559888350}
   - component: {fileID: 1559888347}
   - component: {fileID: 1559888349}
   m_Layer: 0
@@ -1968,7 +1993,7 @@ MonoBehaviour:
   _cardDatabase: {fileID: 11400000, guid: 59f34698ad5934472bb9b8a5711090ca, type: 2}
   _cardSpacing: 0.5
   _cardOverlap: 0.1
-  _testModeWithoutNetwork: 1
+  _testModeWithoutNetwork: 0
   _testSpawnKey: 32
 --- !u!4 &1559888348
 Transform:
@@ -1998,6 +2023,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CardGame.Core::CardGame.Game.BiddingManager
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &1559888350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1559888346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 605368641
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1 &1654806912
 GameObject:
   m_ObjectHideFlags: 0
@@ -2129,7 +2179,19 @@ MonoBehaviour:
   m_CharacterLimit: 0
   m_OnEndEdit:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1962212880}
+        m_TargetAssemblyTypeName: CardGame.Network.MatchmakingManager, CardGame.Core
+        m_MethodName: SetServerAddress
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -2779,6 +2841,7 @@ GameObject:
   - component: {fileID: 1962212877}
   - component: {fileID: 1962212879}
   - component: {fileID: 1962212878}
+  - component: {fileID: 1962212880}
   m_Layer: 5
   m_Name: MatchmakingUI
   m_TagString: Untagged
@@ -2846,6 +2909,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1962212876}
   m_CullTransparentMesh: 1
+--- !u!114 &1962212880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1962212876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b453a641b658e4bdd923c6b2fb3b52df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CardGame.Core::CardGame.Network.MatchmakingManager
+  _serverAddress: 127.0.0.1
+  _serverPort: 7777
 --- !u!1 &2019017443
 GameObject:
   m_ObjectHideFlags: 0
