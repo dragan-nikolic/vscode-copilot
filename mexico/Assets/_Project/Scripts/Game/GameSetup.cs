@@ -98,8 +98,83 @@ namespace CardGame.Game
 
         private void DistributeCardsNetworked(List<Cards.CardData> deck)
         {
-            // TODO: For each player, send them a list of their 10 card IDs
-            // For the Talon, keep it on the server and only reveal to the Declarer later
+            if (!IsServer) return;
+
+            int cardIndex = 0;
+            var connectedClients = NetworkManager.Singleton.ConnectedClientsList;
+
+            // 1. Distribute 10 cards to each player (up to 3 players)
+            for (int playerIndex = 0; playerIndex < _playerCount; playerIndex++)
+            {
+                // Get the ClientId for this player slot (mapping 0-2 index to ClientId)
+                ulong clientId = connectedClients[playerIndex].ClientId;
+
+                for (int i = 0; i < _cardsPerPlayer; i++)
+                {
+                    Cards.CardData data = deck[cardIndex];
+                    
+                    // Instantiate on Server
+                    GameObject cardObj = Instantiate(_cardPrefab);
+                    
+                    // Spawn across network and give ownership to the specific player
+                    // Ownership allows the client to know it's "their" card
+                    NetworkObject netObj = cardObj.GetComponent<NetworkObject>();
+                    netObj.SpawnWithOwnership(clientId);
+
+                    // Tell all clients to set visual data, but keep it face-down for non-owners
+                    // We use a ClientRpc to send the specific Card ID/Data to the client
+                    NotifyCardSpawnedClientRpc(netObj.NetworkObjectId, data.CardId, playerIndex, i, false);
+                    
+                    cardIndex++;
+                }
+            }
+
+            // 2. Place remaining 2 cards in Talon (Server-only visibility initially)
+            for (int i = 0; i < _remainingCards; i++)
+            {
+                Cards.CardData data = deck[cardIndex];
+                GameObject talonObj = Instantiate(_cardPrefab);
+                NetworkObject netObj = talonObj.GetComponent<NetworkObject>();
+                netObj.Spawn(); // Spawn without owner (Talon belongs to the table)
+
+                // Everyone sees Talon as face-down
+                NotifyCardSpawnedClientRpc(netObj.NetworkObjectId, data.CardId, -1, i, true);
+                
+                cardIndex++;
+            }
+            
+            Debug.Log($"[GameSetup] Networked distribution complete. Total spawned: {cardIndex}");
+        }
+
+        [ClientRpc]
+        private void NotifyCardSpawnedClientRpc(ulong networkId, string cardDataId, int playerSlot, int handIndex, bool isFaceDown)
+        {
+            // Find the spawned object by its NetworkId
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkId, out var netObj))
+            {
+                Cards.Card cardScript = netObj.GetComponent<Cards.Card>();
+                
+                // Find the data from the database based on the ID sent by the server
+                Cards.CardData data = _cardDatabase.Cards.FirstOrDefault(c => c.CardId == cardDataId);
+                
+                if (cardScript != null && data != null)
+                {
+                    cardScript.SetCardData(data);
+                    
+                    // Logic for Mexico: 
+                    // - If playerSlot == -1, it's the Talon (Face Down)
+                    // - If I am the Owner (netObj.IsOwner), show Face Up
+                    // - If I am NOT the owner, show Face Down
+                    bool shouldBeHidden = isFaceDown || (!netObj.IsOwner && playerSlot != -1);
+                    cardScript.SetFaceDown(shouldBeHidden);
+                    
+                    // Position the card locally based on the slot and index
+                    Transform spawnPos = GetPlayerHandPosition(playerSlot);
+                    Vector3 offset = CalculateCardOffset(handIndex);
+                    netObj.transform.position = spawnPos.position + offset;
+                    netObj.transform.rotation = spawnPos.rotation;
+                }
+            }
         }
 
         /// <summary>

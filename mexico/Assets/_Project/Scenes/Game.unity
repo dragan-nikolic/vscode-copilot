@@ -1211,8 +1211,7 @@ MonoBehaviour:
     PlayerPrefab: {fileID: 3931491786254269593, guid: 7a54f7c828353449ca5128293159ebff, type: 3}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 1b22b13dc957e49f3a0c24acd3af6ab4, type: 2}
-      - {fileID: 11400000, guid: 1b22b13dc957e49f3a0c24acd3af6ab4, type: 2}
+      - {fileID: 0}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
@@ -1956,6 +1955,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1be264ab9937d423e918f80c0c4135f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CardGame.Core::CardGame.Game.GameSetup
+  ShowTopMostFoldoutHeaderGroup: 1
   _totalCards: 32
   _cardsPerPlayer: 10
   _remainingCards: 2
@@ -1997,9 +1997,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f70fb6ba85002455cbda577ca1d769b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CardGame.Core::CardGame.Game.BiddingManager
-  _currentHighBid: 4
-  _declarerIndex: -1
-  _currentPlayerBidding: 0
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &1654806912
 GameObject:
   m_ObjectHideFlags: 0

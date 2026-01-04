@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4660046794147154963}
   - component: {fileID: 5716233494500072658}
   - component: {fileID: 253611915960149343}
-  - component: {fileID: 5914967563185412013}
+  - component: {fileID: 6375476659823083479}
   m_Layer: 0
   m_Name: CardPrefab
   m_TagString: Untagged
@@ -118,7 +118,7 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &5914967563185412013
+--- !u!114 &6375476659823083479
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
