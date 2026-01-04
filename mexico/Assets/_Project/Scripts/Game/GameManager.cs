@@ -99,8 +99,18 @@ namespace CardGame.Game
         private void StartGame()
         {
             Debug.Log("[GameManager] Starting Mexico match...");
-            // Transition to Bidding after setup is done
-            ChangeState(GameState.Bidding);        }
+            
+            // Find the GameSetup component and trigger spawning
+            GameSetup setup = FindFirstObjectByType<GameSetup>();
+            if (setup != null)
+            {
+                setup.SetupGame();
+                Debug.Log("[GameManager] SetupGame called.");
+            }
+
+            // Only move to Bidding after the server has finished spawning
+            ChangeState(GameState.Bidding);
+        }
 
         private void EndGame()
         {

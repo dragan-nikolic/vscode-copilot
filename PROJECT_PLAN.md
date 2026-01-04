@@ -1,86 +1,45 @@
-# Multiplayer Card Game - Project Plan
+# Mexico Card Game - Project Plan
 
 ## Project Overview
-A multiplayer card game built with Unity, featuring online gameplay, card mechanics, and player progression.
+A multiplayer card game built with Unity, featuring online gameplay, card 
+mechanics, and player progression.
 
 ## Development Phases
 
-### Phase 1: Project Setup & Core Architecture (Week 1-2)
-- [x] Set up Unity project (Unity 6.3)
-- [x] Install networking solution (Mirror or Unity Netcode for GameObjects)
-- [x] Set up version control (Git with .gitignore for Unity)
-- [x] Create folder structure
-- [x] Set up core architecture patterns (MVC/MVVM)
-- [x] Create basic scene structure
+### Phase 1: Core Foundation (COMPLETE)
+- [x] Define Card Data structures (Suits, Ranks, Values)
+- [x] Create ScriptableObject-based Card Database
+- [x] Implement basic Card prefab with visual states (Face Up/Down)
+- [x] Basic Game Manager with State Machine (MainMenu, Lobby, Bidding, etc.)
 
-### Phase 2: Card System Foundation (Week 2-3)
-- [x] Design card data structure (ScriptableObjects)
-- [x] Create Card class with properties (name, cost, effect, artwork)
-- [x] Implement card database/collection system
-- [x] Create card visual prefab
-- [x] Build card UI display system
-- [ ] Implement card hover/selection mechanics
+### Phase 2: Networking & Synchronization (COMPLETE)
+- [x] Integrate Unity Netcode for GameObjects (NGO)
+- [x] Configure NetworkManager with Player and Card prefabs
+- [x] Implement Matchmaking UI (Host/Join logic)
+- [x] Server-authoritative card spawning and distribution
+- [x] Client-side visual synchronization via ClientRpc (Ownership-based visibility)
 
-### Phase 3: Game Rules & Logic (Week 3-5)
-- [ ] Define game rules (turn structure, win conditions)
-- [ ] Create Game Manager (turn system, game state)
-- [ ] Implement deck system (shuffle, draw, discard)
-- [ ] Create hand management system
-- [ ] Build card playing mechanics
-- [ ] Implement game board/field system
-- [ ] Add win/loss conditions
+### Phase 3: Bidding & Talon Phase (IN PROGRESS)
+- [ ] **Bidding Logic**:
+    - [x] Synchronized Bidding UI buttons (5-10, Meksiko, Pass)
+    - [x] Networked bidding state (Current bid, Current bidder) using NetworkVariables
+    - [ ] Active Player Enforcement (Hide UI for players whose turn it isn't)
+- [ ] **Talon Phase**:
+    - [ ] Identify the Declarer (winner of the bid)
+    - [ ] Reveal 2 Talon cards specifically to the Declarer
+    - [ ] Implement swapping logic (Declarer chooses 2 cards to discard)
 
-### Phase 4: Player System (Week 5-6)
-- [ ] Create Player class (health, mana/resources, deck)
-- [ ] Implement player actions (play card, end turn, attack)
-- [ ] Build resource management system
-- [ ] Create player UI (health, mana, deck count)
-- [ ] Add player avatar/profile display
+### Phase 4: Gameplay Loop (UPCOMING)
+- [ ] Turn Management system
+- [ ] Card playing validation (Matching suits/ranks)
+- [ ] Trick evaluation logic
+- [ ] Score tracking per round
 
-### Phase 5: Networking Integration (Week 6-8)
-- [ ] Set up server/client architecture
-- [ ] Implement player connection/disconnection
-- [ ] Synchronize game state across network
-- [ ] Network card actions (play, draw, discard)
-- [ ] Add turn synchronization
-- [ ] Implement matchmaking (simple lobby system)
-- [ ] Handle network errors and reconnection
-
-### Phase 6: UI/UX Polish (Week 8-9)
-- [ ] Design main menu
-- [ ] Create deck builder UI
-- [ ] Build match lobby UI
-- [ ] Add game HUD (timer, turn indicator)
-- [ ] Implement animations (card play, damage, effects)
-- [ ] Add visual feedback (highlights, glow effects)
-- [ ] Create settings menu
-
-### Phase 7: Game Content (Week 9-10)
-- [ ] Design 30-50 unique cards
-- [ ] Create card artwork (placeholder or final)
-- [ ] Balance card costs and effects
-- [ ] Create starter decks
-- [ ] Add card descriptions/tooltips
-
-### Phase 8: Audio & Effects (Week 10-11)
-- [ ] Add background music
-- [ ] Implement sound effects (card play, damage, victory)
-- [ ] Create particle effects (card sparkles, explosions)
-- [ ] Add screen shake and camera effects
-
-### Phase 9: Testing & Bug Fixes (Week 11-12)
-- [ ] Unit testing for card logic
-- [ ] Network stress testing
-- [ ] Playtesting sessions
-- [ ] Balance adjustments
-- [ ] Bug fixes and optimization
-
-### Phase 10: Polish & Release Prep (Week 12-13)
-- [ ] Final optimization
-- [ ] Build for target platforms
-- [ ] Create game trailer/screenshots
-- [ ] Prepare store page
-- [ ] Final bug sweep
+### Phase 5: UI/UX & Polish (UPCOMING)
+- [ ] Player avatars and name displays
+- [ ] Turn timer/indicator
+- [ ] Card animations (moving from hand to table)
+- [ ] Sound effects for dealing and playing cards
 
 ## Technical Stack
 
@@ -148,7 +107,5 @@ A multiplayer card game built with Unity, featuring online gameplay, card mechan
 - Successful deployment to target platform
 
 ## Next Steps
-1. Set up Unity project
-2. Create folder structure (see FOLDER_STRUCTURE.md)
-3. Install networking solution
-4. Begin Phase 1 implementation
+Proceed with Phase 3 by enforcing the active bidder logic, so only the player 
+whose turn it is can see the bidding buttons.
