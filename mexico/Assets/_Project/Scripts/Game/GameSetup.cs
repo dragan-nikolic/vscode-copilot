@@ -96,8 +96,12 @@ namespace CardGame.Game
 
             SortPlayerHands();
 
+            // ADDED FOR TESTING - REMOVE IT
+            FindObjectOfType<BiddingManager>().StartBidding();
+
             Debug.Log($"[GameSetup] Game setup complete. " +
-                $"Players: {_playerCount}, Cards per player: {_cardsPerPlayer}, Talon: {_remainingCards}");
+                $"Players: {_playerCount}, Cards per player: {_cardsPerPlayer}, Talon: {_remainingCards}. " +
+                $"Bidding started.");
         }
 
         /// <summary>

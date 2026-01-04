@@ -50,9 +50,11 @@ namespace CardGame.Game
                 Destroy(child.gameObject);
             }
 
-            // Get local player network object
-            var localPlayer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkPlayer>();
-            
+            // Check if we are in a networked session
+            bool isNetworkActive = NetworkManager.Singleton != null && 
+                                NetworkManager.Singleton.IsClient && 
+                                NetworkManager.Singleton.LocalClient != null;
+
             // Create buttons 5-10
             for (int i = 5; i <= 10; i++)
             {
@@ -66,7 +68,17 @@ namespace CardGame.Game
                 // Disable button if it's not higher than current bid
                 // (Server logic will validate this too)
                 btn.onClick.AddListener(() => {
-                    localPlayer.SubmitBidServerRpc(bidValue);
+                    if (isNetworkActive)
+                    {
+                        var localPlayer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkPlayer>();
+                        localPlayer.SubmitBidServerRpc(bidValue);
+                    }
+                    else
+                    {
+                        // Local testing fallback
+                        Debug.Log($"[Offline Test] Player clicked bid: {bidValue}");
+                        FindObjectOfType<BiddingManager>().PlaceBid(0, bidValue);
+                    }
                 });
             }
 
@@ -74,9 +86,20 @@ namespace CardGame.Game
             GameObject passBtnObj = Instantiate(_buttonPrefab, _buttonContainer);
             passBtnObj.GetComponentInChildren<TextMeshProUGUI>().text = "PASS";
             passBtnObj.GetComponent<Button>().onClick.AddListener(() => {
-                localPlayer.PassServerRpc();
+                if (isNetworkActive)
+                {
+                    var localPlayer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkPlayer>();
+                    localPlayer.PassServerRpc();
+                }
+                else
+                {
+                    // Local testing fallback
+                    Debug.Log("[Offline Test] Player clicked PASS");
+                    FindObjectOfType<BiddingManager>().Pass(0);
+                }
             });
         }
+
 
         public void UpdateCurrentBidDisplay(int amount, string bidderName)
         {
