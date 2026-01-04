@@ -2,7 +2,7 @@
 
 The purpose of this project is to learn using github copilot in vs code.
 
-The project is to create multiplarer card game called Mexico using Unity game 
+The project is to create multiplarer card game called [Mexico](https://www.pagat.com/auctionwhist/meksiko.html) using Unity game 
 engine.
 
 ## setup copilot in vs code
@@ -49,6 +49,7 @@ This project uses Input Manager, which is marked for deprecation. To manage inpu
 ## references
 
 * [How to use GitHub Copilot (the complete beginner's guide)](https://www.youtube.com/watch?v=SJqGYwRq0uc)
+* [Mexico game rules](https://www.pagat.com/auctionwhist/meksiko.html)
 
 ## diary
 
