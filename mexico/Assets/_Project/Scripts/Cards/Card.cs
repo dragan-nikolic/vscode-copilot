@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 using TMPro;
 
@@ -6,7 +7,7 @@ namespace CardGame.Cards
     /// <summary>
     /// Represents a card instance in the game.
     /// </summary>
-    public class Card : MonoBehaviour
+    public class Card : NetworkBehaviour
     {
         [Header("Card Data")]
         [SerializeField] private CardData _data;

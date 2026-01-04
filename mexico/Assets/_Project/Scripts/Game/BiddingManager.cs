@@ -1,54 +1,73 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Netcode; // Required for NetworkBehaviour
 
 namespace CardGame.Game
 {
-    public class BiddingManager : MonoBehaviour
+    public class BiddingManager : NetworkBehaviour
     {
         [Header("Bidding State")]
-        [SerializeField] private int _currentHighBid = 4; // Start below the minimum bid of 5
-        [SerializeField] private int _declarerIndex = -1;
-        [SerializeField] private int _currentPlayerBidding = 0;
+        // Use NetworkVariables to sync the bid state to all clients automatically
+        private NetworkVariable<int> _currentHighBid = new NetworkVariable<int>(4);
+        private NetworkVariable<int> _currentPlayerBiddingIndex = new NetworkVariable<int>(0);
+        private NetworkVariable<int> _declarerIndex = new NetworkVariable<int>(-1);
         
         private int _passCount = 0;
         private bool[] _playerHasPassed = new bool[3];
 
+        // Properties to allow UI to check state
+        public int CurrentPlayerBiddingIndex => _currentPlayerBiddingIndex.Value;
+
         public void StartBidding()
         {
-            _currentHighBid = 4;
-            _declarerIndex = -1;
-            _currentPlayerBidding = 0;
+            if (!IsServer) return; // Only the server should initialize game states
+
+            _currentHighBid.Value = 4;
+            _declarerIndex.Value = -1;
+            _currentPlayerBiddingIndex.Value = 0;
             _passCount = 0;
             System.Array.Clear(_playerHasPassed, 0, _playerHasPassed.Length);
             
             GameManager.Instance.ChangeState(GameState.Bidding);
-            Debug.Log("[Bidding] Bidding started. Player 0 starts.");
+            Debug.Log("[Bidding] Bidding started on server. Player 0 starts.");
         }
 
-        // Called by UI Buttons
-        public void PlaceBid(int playerIndex, int bidAmount)
+        // Called by NetworkPlayer.SubmitBidServerRpc
+        public void HandleIncomingBid(int playerIndex, int bidAmount)
         {
-            if (bidAmount <= _currentHighBid && bidAmount != 10) // 10 is "Meksiko"
+            if (!IsServer) return;
+
+            if (bidAmount <= _currentHighBid.Value && bidAmount != 10) 
             {
                 Debug.LogWarning("Bid must be higher than current bid.");
                 return;
             }
 
-            _currentHighBid = bidAmount;
-            _declarerIndex = playerIndex;
+            _currentHighBid.Value = bidAmount;
+            _declarerIndex.Value = playerIndex;
             
             Debug.Log($"[Bidding] Player {playerIndex} bid {bidAmount}");
-            MoveNextBiddingPlayer();
+
+            if (bidAmount == 10) // "Meksiko" ends bidding immediately
+            {
+                EndBidding();
+            }
+            else
+            {
+                MoveNextBiddingPlayer();
+            }
         }
 
-        public void Pass(int playerIndex)
+        public void HandlePass(int playerIndex)
         {
+            if (!IsServer) return;
+
             _playerHasPassed[playerIndex] = true;
             _passCount++;
             
             Debug.Log($"[Bidding] Player {playerIndex} passed.");
 
-            if (_passCount >= 2 && _declarerIndex != -1)
+            if (_passCount >= 2 && _declarerIndex.Value != -1)
             {
                 EndBidding();
             }
@@ -60,18 +79,19 @@ namespace CardGame.Game
 
         private void MoveNextBiddingPlayer()
         {
+            int nextIndex = _currentPlayerBiddingIndex.Value;
             do {
-                _currentPlayerBidding = (_currentPlayerBidding + 1) % 3;
-            } while (_playerHasPassed[_currentPlayerBidding]);
+                nextIndex = (nextIndex + 1) % 3;
+            } while (_playerHasPassed[nextIndex]);
             
-            // Notify UI to update buttons for the next player
+            _currentPlayerBiddingIndex.Value = nextIndex;
         }
 
         private void EndBidding()
         {
-            Debug.Log($"[Bidding] Bidding over. Declarer: Player {_declarerIndex} with bid {_currentHighBid}");
+            Debug.Log($"[Bidding] Bidding over. Declarer: Player {_declarerIndex.Value} with bid {_currentHighBid.Value}");
             
-            // Move to Talon Phase as per PROJECT_PLAN Phase 3
+            // Transition to Talon Phase as per PROJECT_PLAN Phase 3
             GameManager.Instance.ChangeState(GameState.TalonPhase);
         }
     }

@@ -50,10 +50,10 @@ namespace CardGame.Game
                 Destroy(child.gameObject);
             }
 
-            // Check if we are in a networked session
+            // Check if we are in a networked session to avoid NullReferenceException
             bool isNetworkActive = NetworkManager.Singleton != null && 
-                                NetworkManager.Singleton.IsClient && 
-                                NetworkManager.Singleton.LocalClient != null;
+                                  NetworkManager.Singleton.IsClient && 
+                                  NetworkManager.Singleton.LocalClient != null;
 
             // Create buttons 5-10
             for (int i = 5; i <= 10; i++)
@@ -65,8 +65,7 @@ namespace CardGame.Game
                 string label = bidValue == 10 ? "MEKSIKO" : bidValue.ToString();
                 btnObj.GetComponentInChildren<TextMeshProUGUI>().text = label;
 
-                // Disable button if it's not higher than current bid
-                // (Server logic will validate this too)
+                // The listener must be inside the loop so 'btn' and 'bidValue' are in scope
                 btn.onClick.AddListener(() => {
                     if (isNetworkActive)
                     {
@@ -75,9 +74,9 @@ namespace CardGame.Game
                     }
                     else
                     {
-                        // Local testing fallback
+                        // Local testing fallback - Using HandleIncomingBid to match BiddingManager
                         Debug.Log($"[Offline Test] Player clicked bid: {bidValue}");
-                        FindObjectOfType<BiddingManager>().PlaceBid(0, bidValue);
+                        FindFirstObjectByType<BiddingManager>().HandleIncomingBid(0, bidValue);
                     }
                 });
             }
@@ -85,7 +84,9 @@ namespace CardGame.Game
             // Add Pass Button
             GameObject passBtnObj = Instantiate(_buttonPrefab, _buttonContainer);
             passBtnObj.GetComponentInChildren<TextMeshProUGUI>().text = "PASS";
-            passBtnObj.GetComponent<Button>().onClick.AddListener(() => {
+            Button passBtn = passBtnObj.GetComponent<Button>();
+
+            passBtn.onClick.AddListener(() => {
                 if (isNetworkActive)
                 {
                     var localPlayer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkPlayer>();
@@ -93,13 +94,12 @@ namespace CardGame.Game
                 }
                 else
                 {
-                    // Local testing fallback
+                    // Local testing fallback - Using HandlePass to match BiddingManager
                     Debug.Log("[Offline Test] Player clicked PASS");
-                    FindObjectOfType<BiddingManager>().Pass(0);
+                    FindFirstObjectByType<BiddingManager>().HandlePass(0);
                 }
             });
         }
-
 
         public void UpdateCurrentBidDisplay(int amount, string bidderName)
         {

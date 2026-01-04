@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,7 +12,7 @@ namespace CardGame.Game
     /// - 3 players, each receives 10 cards
     /// - 2 cards remain face down (talon/stock)
     /// </summary>
-    public class GameSetup : MonoBehaviour
+    public class GameSetup : NetworkBehaviour 
     {
         [Header("Game Configuration")]
         [SerializeField] private int _totalCards = 32;
@@ -83,25 +84,22 @@ namespace CardGame.Game
         /// </summary>
         public void SetupGame()
         {
-            Debug.Log("[GameSetup] Setting up game...");
+            // Only the Server/Host should execute the setup logic
+            if (!IsServer) return;
 
-            // Create deck
+            Debug.Log("[GameSetup] Server is setting up the game...");
+
             List<Cards.CardData> deck = CreateDeck();
-
-            // Shuffle deck
             ShuffleDeck(deck);
+            
+            // Logic to distribute card indices to clients via RPCs
+            DistributeCardsNetworked(deck);
+        }
 
-            // Distribute cards
-            DistributeCards(deck);
-
-            SortPlayerHands();
-
-            // ADDED FOR TESTING - REMOVE IT
-            FindObjectOfType<BiddingManager>().StartBidding();
-
-            Debug.Log($"[GameSetup] Game setup complete. " +
-                $"Players: {_playerCount}, Cards per player: {_cardsPerPlayer}, Talon: {_remainingCards}. " +
-                $"Bidding started.");
+        private void DistributeCardsNetworked(List<Cards.CardData> deck)
+        {
+            // TODO: For each player, send them a list of their 10 card IDs
+            // For the Talon, keep it on the server and only reveal to the Declarer later
         }
 
         /// <summary>

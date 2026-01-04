@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4660046794147154963}
   - component: {fileID: 5716233494500072658}
-  - component: {fileID: 5914967563185412013}
   - component: {fileID: 253611915960149343}
+  - component: {fileID: 5914967563185412013}
   m_Layer: 0
   m_Name: CardPrefab
   m_TagString: Untagged
@@ -91,24 +91,8 @@ SpriteRenderer:
   m_Size: {x: 2, y: 2.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
---- !u!114 &5914967563185412013
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2804622197729028928}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5df1879509e7a44ff89e14dcf3c7af87, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.Card
-  _data: {fileID: 0}
-  _spriteRenderer: {fileID: 0}
-  _cardText: {fileID: 0}
-  _isFaceDown: 0
 --- !u!114 &253611915960149343
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134,3 +118,20 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &5914967563185412013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2804622197729028928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5df1879509e7a44ff89e14dcf3c7af87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CardGame.Core::CardGame.Cards.Card
+  ShowTopMostFoldoutHeaderGroup: 1
+  _data: {fileID: 0}
+  _spriteRenderer: {fileID: 0}
+  _cardText: {fileID: 0}
+  _isFaceDown: 0
