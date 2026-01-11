@@ -35,8 +35,6 @@ CardGameScene
 ├── UI
 │   ├── Canvas
 │   │   ├── PlayerUI
-│   │   │   ├── HealthDisplay
-│   │   │   ├── ManaDisplay
 │   │   │   └── TurnIndicator
 │   │   ├── GameUI
 │   │   │   ├── EndTurnButton
@@ -168,7 +166,6 @@ Or use an angled view:
 Create Canvas with:
 
 **Player UI:**
-- Health/Mana displays for local player
 - Turn indicator
 
 **Game UI:**

@@ -29,15 +29,15 @@
 
 #### `NetworkPlayer.cs`
 - Represents a networked player
-- Synchronizes player state (health, mana, turn) using NetworkVariables
+- Synchronizes player state (name, turn, bid) using NetworkVariables
 - Handles player actions via ServerRPCs
 - Server-authoritative validation
 
 **NetworkVariables:**
 - `_playerName` - Player display name
-- `_playerHealth` - Current health
-- `_playerMana` - Current mana
 - `_isPlayerTurn` - Turn state
+- `_currentBid` - Current bid amount
+- `_hasPassed` - Whether player has passed
 
 #### `NetworkCard.cs`
 - Synchronizes card state across network using NetworkVariables

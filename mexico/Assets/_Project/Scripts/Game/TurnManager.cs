@@ -54,7 +54,7 @@ namespace CardGame.Game
             if (isPlayerTurn)
             {
                 GameManager.Instance.ChangeState(GameState.PlayerTurn);
-                // TODO: Draw card, restore mana, etc.
+                // TODO: Draw card, etc.
             }
             else
             {

@@ -140,9 +140,8 @@ Controls all audio in the game. Manages music and sound effects.
 4. In Inspector, fill in:
    - Card Name
    - Description
-   - Card Type: Creature
-   - Mana Cost
-   - Attack and Health values
+   - Card Type
+   - Suit and Rank
    - Add artwork (optional for now)
 
 ## Next Steps
